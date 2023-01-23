@@ -67,12 +67,3 @@ ExternalProject_Add_Step(python post_build
     -P "${CMAKE_CURRENT_LIST_DIR}/post_build.cmake"
     DEPENDEES build
     )
-
-#if(APPLE)
-#    set(library_name "libpython${PYNCPP_REQUIRED_PYTHON_VERSION_MAJOR}.${PYNCPP_REQUIRED_PYTHON_VERSION_MINOR}.dylib")
-#    ExternalProject_Add_Step(python relocate_binaries
-#        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id "${PYTHON_BINARY_DIR}/${library_name}" "${PYTHON_BINARY_DIR}/${library_name}"
-#        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "/usr/local/lib/${library_name}" "${PYTHON_BINARY_DIR}/${library_name}" "${PYTHON_BINARY_DIR}/python.exe"
-#        DEPENDEES build
-#        )
-#endif()
