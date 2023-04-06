@@ -10,6 +10,7 @@
 #include "pyncpp/external/cpython_call.h"
 #include "pyncpp/manager.h"
 #include "pyncpp/object.h"
+#include "pyncpp/tools/qtconsole.h"
 
 #if PYNCPP_SWIG_SUPPORT
 #include "pyncpp/external/swig.h"
