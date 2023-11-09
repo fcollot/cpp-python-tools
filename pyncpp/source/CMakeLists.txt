@@ -39,4 +39,7 @@ endif()
 # Install/Export
 ################################################################################
 
-install(EXPORT pyncpp DESTINATION share/pyncpp)
+install(EXPORT pyncpp
+    DESTINATION "${PYNCPP_SHARE_SUBDIR}"
+    COMPONENT Development
+    )

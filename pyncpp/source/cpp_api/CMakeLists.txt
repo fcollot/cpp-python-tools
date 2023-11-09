@@ -104,9 +104,11 @@ install(TARGETS pyncpp_cpp_api
     EXPORT pyncpp
     LIBRARY
     DESTINATION "lib"
+    COMPONENT Runtime
     )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
     DESTINATION "include/pyncpp/cpp_api"
+    COMPONENT Development
     PATTERN "CMakeLists.txt" EXCLUDE
     )
