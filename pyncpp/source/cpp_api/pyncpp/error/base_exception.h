@@ -13,10 +13,6 @@
 
 #include <stdexcept>
 
-#if PYNCPP_QT5_SUPPORT
-#include <QString>
-#endif
-
 #include "../export.h"
 
 namespace pyncpp
@@ -38,10 +34,6 @@ public:
     /// as if they originated from the Python interpreter.
     ///
     BaseException(const char* message);
-
-    /// (see 'BaseException(const char* message)' for details)
-    ///
-    BaseException(QString message);
 
     /// For internal use.
     ///

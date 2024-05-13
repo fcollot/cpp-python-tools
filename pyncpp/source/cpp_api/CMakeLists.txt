@@ -10,9 +10,6 @@ set(headers
     pyncpp/conversion.h
     pyncpp/conversion/object.h
     pyncpp/conversion/primitive.h
-    pyncpp/conversion/qlist.h
-    pyncpp/conversion/qstring.h
-    pyncpp/conversion/qvariant.h
     pyncpp/error.h
     pyncpp/error/base_exception.h
     pyncpp/error/error_handling.h
@@ -20,6 +17,7 @@ set(headers
     pyncpp/error/exception_traceback.h
     pyncpp/error/exception_types.h
     pyncpp/export.h
+    pyncpp/extension_helper.h
     pyncpp/external/cpython.h
     pyncpp/external/cpython_call.h
     pyncpp/manager.h
@@ -36,14 +34,12 @@ set(headers
 set(sources
     pyncpp/conversion/object.cpp
     pyncpp/conversion/primitive.cpp
-    pyncpp/conversion/qlist.cpp
-    pyncpp/conversion/qstring.cpp
-    pyncpp/conversion/qvariant.cpp
     pyncpp/error/base_exception.cpp
     pyncpp/error/error_handling.cpp
     pyncpp/error/exception_thrower.cpp
     pyncpp/error/exception_traceback.cpp
     pyncpp/error/exception_types.cpp
+    pyncpp/extension_helper.cpp
     pyncpp/manager.cpp
     pyncpp/object/abstract_object.cpp
     pyncpp/object/attribute_accessor.cpp
@@ -63,14 +59,6 @@ add_library(pyncpp_cpp_api SHARED
     ${sources}
     )
 
-set(compile_defnitions)
-
-if(PYNCPP_QT5_SUPPORT)
-    list(APPEND compile_definitions PYNCPP_QT5_SUPPORT)
-endif()
-
-target_compile_definitions(pyncpp_cpp_api PUBLIC ${compile_definitions})
-
 ################################################################################
 # Includes
 ################################################################################
@@ -89,11 +77,6 @@ target_include_directories(pyncpp_cpp_api
 
 target_link_libraries(pyncpp_cpp_api PUBLIC
     ${pyncpp_PYTHON_LIBRARY}
-    )
-
-target_link_libraries(pyncpp_cpp_api PRIVATE
-    Qt5::Core
-    Qt5::Widgets
     )
 
 ################################################################################

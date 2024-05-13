@@ -6,6 +6,7 @@
 
 #include "pyncpp/conversion.h"
 #include "pyncpp/error.h"
+#include "pyncpp/extension_helper.h"
 #include "pyncpp/external/cpython.h"
 #include "pyncpp/external/cpython_call.h"
 #include "pyncpp/manager.h"

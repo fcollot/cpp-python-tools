@@ -1,4 +1,4 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022, 2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #include "module.h"
@@ -16,9 +16,19 @@ Module Module::main()
     return getModuleObject("__main__");
 }
 
-Module Module::import(QString name)
+Module Module::import(const char* name)
 {
     return getModuleObject(name);
+}
+
+Module Module::createExtension(const char* name)
+{
+
+}
+
+void Module::addExtensionFunction(const char* name, PyCFunction function, const char* doc)
+{
+
 }
 
 Module::Module(PyObject* reference) :
@@ -31,7 +41,7 @@ Module::Module(const AbstractObject& other) :
 {
 }
 
-QString Module::name()
+std::string Module::name()
 {
     return cpythonCall(PyModule_GetName, **this);
 }
@@ -45,16 +55,16 @@ PyObject* Module::ensureModuleObject(PyObject* reference)
 {
     if (!PyModule_Check(reference))
     {
-        QString typeName = Py_TYPE(reference)->tp_name;
+        std::string typeName = Py_TYPE(reference)->tp_name;
         Py_CLEAR(reference);
 
-        throw TypeError(QString("'%1' is not a module").arg(typeName));
+        throw TypeError((typeName + " is not a module").c_str());
     }
 
     return reference;
 }
 
-PyObject* Module::getModuleObject(QString name)
+PyObject* Module::getModuleObject(const char* name)
 {
     Object pythonName = name;
     PyObject* moduleObject = cpythonCall(PyImport_GetModule, *pythonName);
@@ -62,13 +72,13 @@ PyObject* Module::getModuleObject(QString name)
     if (!moduleObject)
     {
         Object fromList = list<QString>({"*"});
-        moduleObject = cpythonCall(PyImport_ImportModuleLevel, qUtf8Printable(name), nullptr, nullptr, *fromList, 0);
+        moduleObject = cpythonCall(PyImport_ImportModuleLevel, name, nullptr, nullptr, *fromList, 0);
     }
 
     return moduleObject;
 }
 
-Module import(QString name)
+Module import(const char* name)
 {
     return Module::import(name);
 }

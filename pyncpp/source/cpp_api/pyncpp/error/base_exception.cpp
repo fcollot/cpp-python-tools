@@ -42,13 +42,6 @@ BaseException::BaseException(const char* message) :
     initializeFromNativeException(nativeException);
 }
 
-BaseException::BaseException(QString message) :
-    d(new BaseExceptionPrivate)
-{
-    PyObject* nativeException = createNativeException(PyExc_BaseException, qUtf8Printable(message));
-    initializeFromNativeException(nativeException);
-}
-
 BaseException::BaseException(PyObject* nativeException) :
     d(new BaseExceptionPrivate)
 {

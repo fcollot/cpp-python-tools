@@ -1,12 +1,10 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022, 2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_MODULE_H
 #define PYNCPP_MODULE_H
 
 #include "../external/cpython.h"
-
-#include <QString>
 
 #include "../export.h"
 
@@ -20,22 +18,26 @@ class PYNCPP_EXPORT Module : public Object
 public:
     static Module main();
 
-    static Module import(QString name);
+    static Module import(const char* name);
+
+    static Module createExtension(const char* name);
+
+    void addExtensionFunction(const char* name, PyCFunction function, const char* doc);
 
     Module(PyObject* reference);
 
     Module(const AbstractObject& other);
 
-    QString name();
+    std::string name();
 
     Object dict();
 
 private:
     static PyObject* ensureModuleObject(PyObject* reference);
-    static PyObject* getModuleObject(QString name);
+    static PyObject* getModuleObject(const char* name);
 };
 
-PYNCPP_EXPORT Module import(QString name);
+PYNCPP_EXPORT Module import(const char* name);
 
 } // namespace pyncpp
 

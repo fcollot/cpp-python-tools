@@ -19,21 +19,14 @@ project(pyncpp VERSION "${PYNCPP_VERSION}")
 # Dependencies
 ################################################################################
 
-find_package(pyncpp REQUIRED OPTIONAL_COMPONENTS Qt5 SWIG)
-
-set(PYNCPP_QT5_SUPPORT ${pyncpp_Qt5_FOUND})
-
-if(PYNCPP_QT5_SUPPORT)
-    find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
-endif()
+find_package(pyncpp REQUIRED)
 
 ################################################################################
 # Subdirectories
 ################################################################################
 
-if(PYNCPP_BUILD_CPP_API)
-    add_subdirectory(cpp_api)
-endif()
+add_subdirectory(cpp_api)
+add_subdirectory(pyncpp)
 
 ################################################################################
 # Install/Export
