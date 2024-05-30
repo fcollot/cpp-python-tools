@@ -1,4 +1,4 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #include "base_exception.h"
@@ -39,13 +39,6 @@ BaseException::BaseException(const char* message) :
     d(new BaseExceptionPrivate)
 {
     PyObject* nativeException = createNativeException(PyExc_BaseException, message);
-    initializeFromNativeException(nativeException);
-}
-
-BaseException::BaseException(QString message) :
-    d(new BaseExceptionPrivate)
-{
-    PyObject* nativeException = createNativeException(PyExc_BaseException, qUtf8Printable(message));
     initializeFromNativeException(nativeException);
 }
 

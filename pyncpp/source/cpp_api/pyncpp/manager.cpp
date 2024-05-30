@@ -1,118 +1,141 @@
-// Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #include "manager.h"
 
 #include <stdexcept>
-
-#if PYNCPP_QT5_SUPPORT
-#include <QApplication>
-#include <QDebug>
-#include <QDir>
-#else
-#include <iostream>
-#endif
+#include <string>
+#include <vector>
 
 #include "error/exception_types.h"
-#include "external/cpython.h"
 
 namespace pyncpp
 {
 
+std::unique_ptr<Manager> Manager::static_instance;
+
 struct ManagerPrivate
 {
-    bool isRunning = false;
-    Manager::OutputFunction infoOutput = nullptr;
-    Manager::OutputFunction warningOutput = nullptr;
-    Manager::OutputFunction errorOutput = nullptr;
-    wchar_t* pythonHome;
+    static std::filesystem::path pythonHome;
+    static int argc;
+    static std::vector<std::string> argv;
+    static std::string mainModule;
+
+    std::string errorMessage;
+    bool ownsPython = false;
 };
+
+std::filesystem::path ManagerPrivate::pythonHome;
+int ManagerPrivate::argc = -1;
+std::vector<std::string> ManagerPrivate::argv;
+std::string ManagerPrivate::mainModule;
+
+void Manager::setPythonHome(const std::filesystem::path& pythonHome)
+{
+    ManagerPrivate::pythonHome = pythonHome;
+}
+
+void Manager::setCommandLineArguments(int argc, char** argv)
+{
+    ManagerPrivate::argc = argc;
+    ManagerPrivate::argv.reserve(argc);
+
+    for (size_t i = 0; i < argc; i++)
+    {
+        ManagerPrivate::argv.push_back(argv[i]);
+    }
+}
+
+void Manager::setMainModule(const char* name)
+{
+    ManagerPrivate::mainModule = name;
+}
+
+Manager& Manager::instance()
+{
+    if (!static_instance)
+    {
+        static_instance = std::unique_ptr<Manager>(new Manager);
+    }
+
+    return *static_instance.get();
+}
 
 Manager::Manager() :
     d(new ManagerPrivate)
 {
+    try
+    {
+        initializeInterpreterIfNeeded();
+        initializeAPI();
+    }
+    catch (std::exception& e)
+    {
+        d->errorMessage = e.what();
+    }
 }
 
 Manager::~Manager()
 {
-    finalize();
+    finalizeInterpreterIfNeeded();
 }
 
-void Manager::setOutputFunctions(OutputFunction info, OutputFunction warning, OutputFunction error)
+bool Manager::errorOccured()
 {
-    d->infoOutput = info;
-    d->warningOutput = warning;
-    d->errorOutput = error;
+    return !d->errorMessage.empty();
 }
 
-bool Manager::isRunning()
+const char* Manager::errorMessage()
 {
-    return d->isRunning;
+    return d->errorMessage.c_str();
 }
 
-bool Manager::initialize(const char* pythonHome)
+std::filesystem::path Manager::getPythonHome()
 {
-    try
-    {
-        initializeOutputFunctions();
-        initializeInterpreter(pythonHome);
-        initializeAPI();
-        d->isRunning = true;
-    }
-    catch (std::exception& e)
-    {
-        std::string message = std::string("PYNCPP initialization failed: ") + e.what();
-        d->errorOutput(message.c_str());
-    }
-
-    return d->isRunning;
+    return d->pythonHome;
 }
 
-void Manager::initializeOutputFunctions()
+int Manager::runMain()
 {
-    if (!d->infoOutput)
-    {
-#if PYNCPP_QT5_SUPPORT
-        d->infoOutput = [] (const char* text) { qInfo() << text; };
-#else
-        d->infoOutput = [] (const char* text) { std::cout << text << std::endl; };
-#endif
-    }
-
-    if (!d->warningOutput)
-    {
-#if PYNCPP_QT5_SUPPORT
-        d->warningOutput = [] (const char* text) { qWarning() << text; };
-#else
-        d->warningOutput = [] (const char* text) { std::cout << text << std::endl; };
-#endif
-    }
-
-    if (!d->errorOutput)
-    {
-#if PYNCPP_QT5_SUPPORT
-        d->errorOutput = [] (const char* text) { qCritical() << text; };
-#else
-        d->errorOutput = [] (const char* text) { std::cerr << text << std::endl; };
-#endif
-    }
+    return Py_RunMain();
 }
 
-void Manager::initializeInterpreter(const char* pythonHome)
+void Manager::initializeInterpreterIfNeeded()
 {
-    d->pythonHome = Py_DecodeLocale(qUtf8Printable(QDir::toNativeSeparators(pythonHome)), nullptr);
-    Py_SetPythonHome(d->pythonHome);
-
-    Py_Initialize();
-
-    if (Py_IsInitialized())
+    if (!Py_IsInitialized())
     {
-        std::string message = std::string("Python interpreter initialized: ") + Py_GetVersion();
-        d->infoOutput(message.c_str());
-    }
-    else
-    {
-        throw std::runtime_error("Could not initialize the Python interpreter.");
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+        config.isolated = 1;
+        std::wstring home = d->pythonHome.wstring();
+
+        if (d->argc >= 1)
+        {
+            char* argv[d->argc];
+
+            for (size_t i = 0; i < d->argc; i++)
+            {
+                argv[i] = const_cast<char*>(d->argv[i].c_str());
+            }
+
+            checkStatus(PyConfig_SetBytesArgv(&config, d->argc, argv));
+        }
+
+        if (!home.empty())
+        {
+            PyConfig_SetString(&config, &config.home, home.c_str());
+        }
+
+        if (!d->mainModule.empty())
+        {
+            PyConfig_SetBytesString(&config, &config.run_module, d->mainModule.c_str());
+        }
+
+        checkStatus(Py_InitializeFromConfig(&config));
+
+        PyConfig_Clear(&config);
+
+        d->ownsPython = true;
     }
 }
 
@@ -121,18 +144,24 @@ void Manager::initializeAPI()
     internal::initializeExceptions();
 }
 
-void Manager::finalize()
+void Manager::finalizeInterpreterIfNeeded()
 {
-    finalizeInterpreter();
-    d->isRunning = false;
-}
-
-void Manager::finalizeInterpreter()
-{
-    if (Py_IsInitialized())
+    if (d->ownsPython && Py_IsInitialized())
     {
         Py_FinalizeEx();
-        d->infoOutput("Python interpreter terminated.");
+    }
+}
+
+void Manager::checkStatus(PyStatus status)
+{
+    if (PyStatus_IsError(status))
+    {
+        throw std::runtime_error(status.err_msg);
+    }
+
+    if (PyStatus_IsExit(status))
+    {
+        throw pyncpp::SystemExit((std::string("System exit ") + std::to_string(status.exitcode)).c_str());
     }
 }
 

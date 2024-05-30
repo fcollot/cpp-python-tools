@@ -1,4 +1,4 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022, 2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_FUNCTION_CALL_H
@@ -74,8 +74,8 @@ FunctionCall& FunctionCall::kwarg(const char* name, const TYPE& value)
 template <class... ARGS>
 FunctionCall AbstractObject::operator()(ARGS... args) const
 {
-    QList<Object> argsList;
-    (argsList << ... << Object::create(args)); // C++ fold expression
+    std::list<Object> argsList;
+    (argsList.push_back(Object::create(args)), ...); // C++ fold expression
     return FunctionCall(*this, tuple(argsList));
 }
 

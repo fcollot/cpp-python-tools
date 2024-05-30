@@ -1,33 +1,35 @@
-// Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
-#include "qlist.h"
+#include "stdlist.h"
 
 namespace pyncpp
 {
 
-void clearList(QList<PyObject*> list)
+void clearList(std::list<PyObject*> list)
 {
-    while (!list.isEmpty())
+    for (auto &item : list)
     {
-        PyObject* item = list.takeFirst();
         Py_CLEAR(item);
     }
+
+    list.clear();
 }
 
 } // namespace pyncpp
 
-bool pyncppToPython(const QList<PyObject*>& qList, PyObject** output)
+bool pyncppToPython(const std::list<PyObject*>& stdList, PyObject** output)
 {
-    *output = PyList_New(qList.length());
+    *output = PyList_New(stdList.size());
 
     if (*output)
     {
-        for (Py_ssize_t i = 0; i < qList.length(); i++)
+        Py_ssize_t i = 0;
+
+        for (auto &item : stdList)
         {
-            PyObject* item = qList.at(i);
             Py_INCREF(item);
-            PyList_SET_ITEM(*output, i, item);
+            PyList_SET_ITEM(*output, i++, item);
         }
 
         return true;
@@ -38,7 +40,7 @@ bool pyncppToPython(const QList<PyObject*>& qList, PyObject** output)
     }
 }
 
-bool pyncppToCPP(const PyObject* object, QList<PyObject*>& output)
+bool pyncppToCPP(const PyObject* object, std::list<PyObject*>& output)
 {
     bool success = true;
     Py_ssize_t numItems = PySequence_Size(const_cast<PyObject*>(object));
@@ -51,7 +53,7 @@ bool pyncppToCPP(const PyObject* object, QList<PyObject*>& output)
 
             if (item)
             {
-                output.append(item);
+                output.push_back(item);
             }
             else
             {

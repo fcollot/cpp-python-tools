@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+# Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.19)
@@ -7,9 +7,9 @@ cmake_policy(SET CMP0011 NEW) # Policy PUSH/POP in included scripts
 cmake_policy(SET CMP0048 NEW) # Project command manages version variables
 cmake_policy(SET CMP0057 NEW) # IN_LIST operator
 cmake_policy(SET CMP0068 NEW) # RPATH settings on macOS do not affect install_name
-cmake_policy(SET CMP0078 NEW) # Standard SWIG target names
-cmake_policy(SET CMP0086 NEW) # Pass -module option to SWIG
+cmake_policy(SET CMP0135 NEW) # ExternalProject_Add uses time of extraction for timestamps
 
+include(CMakePackageConfigHelpers)
 include(ExternalProject)
 
 ################################################################################
@@ -57,7 +57,7 @@ project(pyncpp VERSION "${PYNCPP_VERSION}")
 # Settings
 ################################################################################
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
@@ -72,17 +72,10 @@ if(NOT GENERATOR_IS_MULTI_CONFIG AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
-option(PYNCPP_QT5_SUPPORT "Include support for Qt5." ON)
+option(PYNCPP_QT5 "Include Qt5 (using PySide2)" OFF)
+option(PYNCPP_QT6 "Include Qt6 (using PySide6)" OFF)
 
 option(PYNCPP_BUILD_EXAMPLES "Build example project" OFF)
-
-################################################################################
-# Dependencies
-################################################################################
-
-if(PYNCPP_QT5_SUPPORT)
-    find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
-endif()
 
 ################################################################################
 # Subdirectories
@@ -91,6 +84,10 @@ endif()
 add_subdirectory(python)
 add_subdirectory(config)
 add_subdirectory(pyncpp)
+
+if(PYNCPP_QT5 OR PYNCPP_QT6)
+    add_subdirectory(qt)
+endif()
 
 if(PYNCPP_BUILD_EXAMPLES)
     add_subdirectory(examples)

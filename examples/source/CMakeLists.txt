@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+# Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
@@ -20,13 +20,13 @@ project(pyncpp_examples VERSION "${PYNCPP_EXAMPLES_VERSION}")
 ################################################################################
 
 if(APPLE)
-    if(PYNCPP_EXAMPLES_FRAMEWORKS)
-        set(CMAKE_MACOSX_BUNDLE TRUE)
-    else()
-        set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
-    endif()
+#    if(PYNCPP_EXAMPLES_FRAMEWORKS)
+#        set(CMAKE_MACOSX_BUNDLE TRUE)
+#    else()
+        list(APPEND CMAKE_INSTALL_RPATH "@executable_path/../lib")
+#    endif()
 elseif(UNIX)
-    set(CMAKE_INSTALL_RPATH "\${ORIGIN}/../lib")
+    list(APPEND CMAKE_INSTALL_RPATH "\${ORIGIN}/../lib")
 endif()
 
 ################################################################################
@@ -34,39 +34,32 @@ endif()
 ################################################################################
 
 find_package(pyncpp REQUIRED
-    COMPONENTS CPP_API
-    OPTIONAL_COMPONENTS Qt5
+    OPTIONAL_COMPONENTS Qt5 Qt6
     )
 
-set(PYNCPP_QT5_SUPPORT ${pyncpp_Qt5_FOUND})
+set(qt_versions)
 
-if(PYNCPP_QT5_SUPPORT)
-    find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
-    get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
-    get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
-    find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
+if(pyncpp_Qt5_FOUND)
+    list(APPEND qt_versions 5)
 endif()
 
-################################################################################
-# Compile definitions
-################################################################################
-
-if(WIN32)
-    set(python_home ".")
-else()
-    if(APPLE AND PYNCPP_EXAMPLES_FRAMEWORKS)
-        set(python_home "../../../../${pyncpp_PYTHON_INSTALL_DESTINATION}")
-    else()
-        set(python_home "../${pyncpp_PYTHON_INSTALL_DESTINATION}")
-    endif()
+if(pyncpp_Qt6_FOUND)
+    list(APPEND qt_versions 6)
 endif()
 
-add_compile_definitions(PYTHON_HOME="${python_home}")
+if(APPLE)
+    foreach(qt_version ${qt_versions})
+        find_package(Qt${qt_version} REQUIRED COMPONENTS Core Widgets)
+        get_target_property(_qmake_executable Qt${qt_version}::qmake IMPORTED_LOCATION)
+        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+        find_program(MACDEPLOYQT{qt_version} macdeployqt HINTS "${_qt_bin_dir}")
+    endforeach()
+endif()
 
 ################################################################################
 # Subdirectories
 ################################################################################
 
-if(PYNCPP_QT5_SUPPORT)
+if(qt_versions)
     add_subdirectory(qt_application)
 endif()

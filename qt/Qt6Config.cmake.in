@@ -1,0 +1,79 @@
+# Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
+# License: BSD-3-Clause
+
+include(CMakeFindDependencyMacro)
+
+@PACKAGE_INIT@
+
+set(_PYTHON_DIR @PACKAGE_PYNCPP_PYTHON_DIR@)
+
+set(Qt6_DIR)
+
+get_directory_property(previous_targets IMPORTED_TARGETS)
+
+find_dependency(Qt6
+    COMPONENTS ${Qt6_FIND_COMPONENTS}
+    )
+
+set(Qt6_FOUND TRUE)
+
+get_directory_property(targets IMPORTED_TARGETS)
+
+set(_qt_dir "${_PYTHON_DIR}/lib/python@PYNCPP_PYTHON_SHORT_VERSION@/site-packages/PySide6/Qt")
+file(GLOB possible_subdirs LIST_DIRECTORIES TRUE RELATIVE ${_qt_dir} "${_qt_dir}/*")
+set(subdirs)
+set(Qt6_PATHS)
+
+foreach(subdir ${possible_subdirs})
+    if(IS_DIRECTORY "${_qt_dir}/${subdir}")
+        list(APPEND subdirs ${subdir})
+        list(APPEND Qt6_PATHS "${_qt_dir}/${subdir}")
+    endif()
+endforeach()
+list(JOIN subdirs "|" subdirs_regex)
+set(location_regex "^.*/qt/(${subdirs_regex})/(.*)$")
+
+foreach(target ${targets})
+    if(NOT target IN_LIST previous_targets AND target MATCHES "^Qt6::")
+        get_target_property(location ${target} IMPORTED_LOCATION)
+
+        set(location_variable)
+        get_target_property(configs ${target} IMPORTED_CONFIGURATIONS)
+
+        if(location)
+            set(location_variable IMPORTED_LOCATION)
+        else()
+            if(configs)
+                foreach(config ${configs})
+                    get_target_property(location ${target} IMPORTED_LOCATION_${config})
+                    if(location)
+                        set(location_variable IMPORTED_LOCATION_${config})
+                        break()
+                    endif()
+                endforeach()
+            endif()
+        endif()
+
+        if(location_variable)
+            if(location MATCHES "${location_regex}")
+                set(location "${_qt_dir}/${CMAKE_MATCH_1}/${CMAKE_MATCH_2}")
+                set_target_properties(${target} PROPERTIES
+                    IMPORTED_LOCATION "${location}"
+                    )
+                if(configs)
+                    foreach(config ${configs})
+                        set_target_properties(${target} PROPERTIES
+                            IMPORTED_LOCATION_${config} "${location}"
+                            )
+                    endforeach()
+                endif()
+            endif()
+        endif()
+    endif()
+endforeach()
+
+foreach(component ${Qt6_FIND_COMPONENTS})
+    set(Qt6_${component}_FOUND TRUE)
+endforeach()
+
+check_required_components(Qt6)

@@ -5,6 +5,7 @@
 
 #include "../error.h"
 
+
 bool pyncppToPython(bool value, PyObject** output)
 {
     *output = PyBool_FromLong(value);

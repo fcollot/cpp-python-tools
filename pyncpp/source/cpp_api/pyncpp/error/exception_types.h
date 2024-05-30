@@ -1,4 +1,4 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022, 2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_EXCEPTION_TYPES_H
@@ -22,7 +22,6 @@
         static void registerThrower() { internal::registerExceptionThrower<NAME>(PyExc_ ## NAME); } \
         static void raise(const char* message) { raiseError(PyExc_ ## NAME, message); } \
         NAME(const char* message) : PARENT(createNativeException(PyExc_ ## NAME, message)) {} \
-        NAME(QString message) : PARENT(createNativeException(PyExc_ ## NAME, qUtf8Printable(message))) {} \
         NAME(PyObject* nativeException) : PARENT(nativeException) {} \
     }
 

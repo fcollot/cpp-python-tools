@@ -1,0 +1,76 @@
+# Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
+# License: BSD-3-Clause
+
+include(CMakeFindDependencyMacro)
+
+set(@PACKAGE@_DIR)
+
+get_directory_property(_previous_targets IMPORTED_TARGETS)
+
+find_dependency(@PACKAGE@
+    COMPONENTS ${@PACKAGE@_FIND_COMPONENTS}
+    )
+
+set(@PACKAGE@_DIR)
+set(@PACKAGE@_FOUND TRUE)
+
+set(_binary_dir "@PACKAGE_BINARY_DIR@")
+
+file(GLOB_RECURSE _possible_subdirs LIST_DIRECTORIES TRUE RELATIVE ${_binary_dir} "${_binary_dir}/*")
+set(_binary_subdirs)
+set(@PACKAGE@_LIBRARY_PATHS ${_binary_dir})
+
+foreach(_subdir ${_possible_subdirs})
+    if(IS_DIRECTORY "${_binary_dir}/${_subdir}")
+        list(APPEND _subdirs ${_subdir})
+        list(APPEND @PACKAGE@_LIBRARY_PATHS "${_binary_dir}/${_subdir}")
+    endif()
+endforeach()
+
+list(JOIN _subdirs "|" _subdirs_regex)
+set(_location_regex "^.*/(${_subdirs_regex}/)?((.*${CMAKE_SHARED_LIBRARY_SUFFIX})|(.*\.framework/.*))$")
+
+get_directory_property(_imported_targets IMPORTED_TARGETS)
+
+foreach(_target ${_imported_targets})
+    if(NOT _target IN_LIST _previous_targets AND _target MATCHES "^@PACKAGE@::")
+        get_target_property(_location ${_target} IMPORTED_LOCATION)
+
+        set(_location_variable)
+        get_target_property(_configs ${_target} IMPORTED_CONFIGURATIONS)
+
+        if(_location)
+            set(_location_variable IMPORTED_LOCATION)
+        else()
+            if(_configs)
+                foreach(_config ${_configs})
+                    get_target_property(_location ${_target} IMPORTED_LOCATION_${_config})
+                    if(_location)
+                        set(_location_variable IMPORTED_LOCATION_${_config})
+                        break()
+                    endif()
+                endforeach()
+            endif()
+        endif()
+
+        if(_location_variable)
+            if(_location MATCHES "${_location_regex}")
+                set(_new_location "${_binary_dir}/${CMAKE_MATCH_1}/${CMAKE_MATCH_2}")
+                set_target_properties(${_target} PROPERTIES
+                    IMPORTED_LOCATION "${_new_location}"
+                    )
+                if(_configs)
+                    foreach(_config ${_configs})
+                        set_target_properties(${_target} PROPERTIES
+                            IMPORTED_LOCATION_${_config} "${_new_location}"
+                            )
+                    endforeach()
+                endif()
+            endif()
+        endif()
+    endif()
+endforeach()
+
+foreach(_component ${@PACKAGE@_FIND_COMPONENTS})
+    set(@PACKAGE@_${component}_FOUND TRUE)
+endforeach()

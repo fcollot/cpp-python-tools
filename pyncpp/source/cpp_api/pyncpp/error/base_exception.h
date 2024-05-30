@@ -1,4 +1,4 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_BASE_EXCEPTION_H
@@ -12,10 +12,6 @@
 #include "../external/cpython.h"
 
 #include <stdexcept>
-
-#if PYNCPP_QT5_SUPPORT
-#include <QString>
-#endif
 
 #include "../export.h"
 
@@ -38,10 +34,6 @@ public:
     /// as if they originated from the Python interpreter.
     ///
     BaseException(const char* message);
-
-    /// (see 'BaseException(const char* message)' for details)
-    ///
-    BaseException(QString message);
 
     /// For internal use.
     ///

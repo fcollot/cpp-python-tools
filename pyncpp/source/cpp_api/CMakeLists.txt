@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+# Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
 ################################################################################
@@ -10,9 +10,8 @@ set(headers
     pyncpp/conversion.h
     pyncpp/conversion/object.h
     pyncpp/conversion/primitive.h
-    pyncpp/conversion/qlist.h
-    pyncpp/conversion/qstring.h
-    pyncpp/conversion/qvariant.h
+    pyncpp/conversion/stdlist.h
+    pyncpp/conversion/stdvector.h
     pyncpp/error.h
     pyncpp/error/base_exception.h
     pyncpp/error/error_handling.h
@@ -36,9 +35,8 @@ set(headers
 set(sources
     pyncpp/conversion/object.cpp
     pyncpp/conversion/primitive.cpp
-    pyncpp/conversion/qlist.cpp
-    pyncpp/conversion/qstring.cpp
-    pyncpp/conversion/qvariant.cpp
+    pyncpp/conversion/stdlist.cpp
+    pyncpp/conversion/stdvector.cpp
     pyncpp/error/base_exception.cpp
     pyncpp/error/error_handling.cpp
     pyncpp/error/exception_thrower.cpp
@@ -58,24 +56,20 @@ set(sources
 # Library
 ################################################################################
 
-add_library(pyncpp_cpp_api SHARED
+add_library(pyncpp_cpp_api_static STATIC
     ${headers}
     ${sources}
     )
 
-set(compile_defnitions)
-
-if(PYNCPP_QT5_SUPPORT)
-    list(APPEND compile_definitions PYNCPP_QT5_SUPPORT)
-endif()
-
-target_compile_definitions(pyncpp_cpp_api PUBLIC ${compile_definitions})
+add_library(pyncpp_cpp_api SHARED
+    ${headers}
+    )
 
 ################################################################################
 # Includes
 ################################################################################
 
-target_include_directories(pyncpp_cpp_api
+target_include_directories(pyncpp_cpp_api_static
     PRIVATE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/pyncpp"
     PUBLIC
@@ -87,20 +81,19 @@ target_include_directories(pyncpp_cpp_api
 # Link
 ################################################################################
 
-target_link_libraries(pyncpp_cpp_api PUBLIC
+target_link_libraries(pyncpp_cpp_api_static PUBLIC
     ${pyncpp_PYTHON_LIBRARY}
     )
 
-target_link_libraries(pyncpp_cpp_api PRIVATE
-    Qt5::Core
-    Qt5::Widgets
+target_link_libraries(pyncpp_cpp_api PUBLIC
+    pyncpp_cpp_api_static
     )
 
 ################################################################################
 # Install/Export
 ################################################################################
 
-install(TARGETS pyncpp_cpp_api
+install(TARGETS pyncpp_cpp_api_static pyncpp_cpp_api
     EXPORT pyncpp_exports
 
     RUNTIME

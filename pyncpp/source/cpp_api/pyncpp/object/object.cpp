@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #include "object.h"
@@ -10,6 +10,11 @@ struct ObjectPrivate
 {
     PyObject* reference;
 };
+
+Object Object::create(const Object& other)
+{
+    return other;
+}
 
 Object Object::borrowed(const PyObject* reference)
 {
@@ -88,7 +93,7 @@ Object::Object(const char* value) :
     internalSetReference(reference);
 }
 
-Object::Object(QString value) :
+Object::Object(const std::string& value) :
     d(new ObjectPrivate)
 {
     PyObject* reference;

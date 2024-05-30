@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_OBJECT_H
@@ -9,10 +9,6 @@
 ///
 
 #include "../external/cpython.h"
-
-#if PYNCPP_QT5_SUPPORT
-#include <QString>
-#endif // PYNCPP_QT5_SUPPORT
 
 #include "../export.h"
 #include "../external/cpython_call.h"
@@ -27,6 +23,10 @@ struct ObjectPrivate;
 class PYNCPP_EXPORT Object : public AbstractObject
 {
 public:
+    /// Wraps the same Python object as the one wrapped by 'other'.
+    ///
+    static Object create(const Object& other);
+
     /// Converts a C++ object to Python using the associated overload of the
     /// 'pyncppToPython' function.
     ///
@@ -66,7 +66,7 @@ public:
 
     /// Creates a wrapped Python string.
     ///
-    Object(QString value);
+    Object(const std::string& value);
 
     virtual ~Object();
 

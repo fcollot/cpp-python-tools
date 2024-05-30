@@ -1,10 +1,13 @@
-// Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_MANAGER_H
 #define PYNCPP_MANAGER_H
 
-#include <functional>
+#include <filesystem>
+#include <memory>
+
+#include "external/cpython.h"
 
 #include "export.h"
 
@@ -16,26 +19,34 @@ struct ManagerPrivate;
 class PYNCPP_EXPORT Manager
 {
 public:
-    typedef std::function<void(const char*)> OutputFunction;
+    static void setPythonHome(const std::filesystem::path& pythonHome);
 
-    Manager();    
+    static void setCommandLineArguments(int argc, char** argv);
+
+    static void setMainModule(const char* name);
+
+    static Manager& instance();
+
+    Manager();
     ~Manager();
 
-    void setOutputFunctions(OutputFunction info, OutputFunction warning, OutputFunction error);
+    bool errorOccured();
+    const char* errorMessage();
 
-    bool initialize(const char* pythonHome);
+    std::filesystem::path getPythonHome();
 
-    bool isRunning();
+    int runMain();
 
 private:
+    static std::unique_ptr<Manager> static_instance;
     ManagerPrivate* const d;
 
-    void initializeOutputFunctions();
-    void initializeInterpreter(const char* pythonHome);
+    void initializeInterpreterIfNeeded();
     void initializeAPI();
 
-    void finalize();
-    void finalizeInterpreter();
+    void finalizeInterpreterIfNeeded();
+
+    void checkStatus(PyStatus status);
 };
 
 } // namespace pyncpp

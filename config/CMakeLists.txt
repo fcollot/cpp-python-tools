@@ -1,12 +1,9 @@
-# Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+# Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
-
-include(CMakePackageConfigHelpers)
 
 foreach(config ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
 
-    set(CONFIG ${config})
-    set(PREFIX_DIR "${PROJECT_BINARY_DIR}/${config}")
+    set(PREFIX_DIR "${PROJECT_BINARY_DIR}")
 
     configure_package_config_file("${CMAKE_CURRENT_LIST_DIR}/pyncppConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/pyncppConfig-${config}.cmake"
         INSTALL_PREFIX "${PREFIX_DIR}"

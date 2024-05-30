@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+# Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
 ################################################################################
@@ -18,7 +18,7 @@ ExternalProject_Add(pyncpp_python
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "<SOURCE_DIR>/PCbuild/build.bat" $<$<CONFIG:Debug>:-d>
     INSTALL_COMMAND ${CMAKE_COMMAND}
     --install "${CMAKE_CURRENT_BINARY_DIR}"
-    --prefix "${PROJECT_BINARY_DIR}"
+    --prefix "${PYNCPP_PYTHON_DIR}"
     --config $<CONFIG>
     )
 
@@ -26,7 +26,7 @@ set(library_name "python${PYNCPP_PYTHON_VERSION_MAJOR}${PYNCPP_PYTHON_VERSION_MI
 
 ExternalProject_Add_Step(pyncpp_python post_install
     DEPENDEES install
-    COMMAND "${PROJECT_BINARY_DIR}/${PYNCPP_PYTHON_SUBDIR}/python$<$<CONFIG:Debug>:_d>.exe" -m ensurepip --upgrade
+    COMMAND "${PYNCPP_PYTHON_DIR}/python$<$<CONFIG:Debug>:_d>.exe" -m ensurepip --upgrade
     )
 
 ################################################################################
@@ -39,7 +39,7 @@ set(source_dir ${CMAKE_CURRENT_BINARY_DIR}/source)
 install(PROGRAMS
     "${build_dir}/pythonw$<$<CONFIG:Debug>:_d>.exe"
     "${build_dir}/python$<$<CONFIG:Debug>:_d>.exe"
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}"
     COMPONENT Runtime
     )
 
@@ -50,40 +50,40 @@ set(runtime_files
     )
 
 install(FILES ${runtime_files}
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}"
     COMPONENT Runtime
     )
 
 install(CODE "
-    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/${library_name}._pth\"
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/${library_name}._pth\"
         \".\\n\"
         \"Lib\\n\"
         \"DLLs\\n\"
         \"import site\"
         )
     file(WRITE \"\${CMAKE_INSTALL_PREFIX}/bin/${library_name}._pth\"
-        \"../${PYNCPP_PYTHON_SUBDIR}\\n\"
-        \"../${PYNCPP_PYTHON_SUBDIR}/Lib\\n\"
-        \"../${PYNCPP_PYTHON_SUBDIR}/DLLs\\n\"
+        \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}\\n\"
+        \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}/Lib\\n\"
+        \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}/DLLs\\n\"
         \"import site\"
         )
     file(CREATE_LINK
-        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/${library_name}.dll\"
+        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/${library_name}.dll\"
         \"\${CMAKE_INSTALL_PREFIX}/bin/${library_name}.dll\")
     "
     COMPONENT Runtime
     )
 
 install(DIRECTORY "${source_dir}/Lib/"
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/Lib"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/Lib"
     COMPONENT Runtime
     PATTERN "*.pyc" EXCLUDE
     )
 
 install(CODE "
     if(NOT \"\${CMAKE_INSTALL_PREFIX}\" STREQUAL \"${PROJECT_BINARY_DIR}\")
-        file(INSTALL \"${PROJECT_BINARY_DIR}/${PYNCPP_PYTHON_SUBDIR}/Lib/site-packages\"
-            DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/Lib\"
+        file(INSTALL \"${PYNCPP_PYTHON_DIR}/Lib/site-packages\"
+            DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/Lib\"
             PATTERN \"*.pyc\" EXCLUDE
             )
     endif()
@@ -92,7 +92,7 @@ install(CODE "
     )
 
 install(DIRECTORY "${build_dir}/"
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/DLLs"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/DLLs"
     COMPONENT Runtime
     FILES_MATCHING
     PATTERN "*.dll"
@@ -102,7 +102,7 @@ install(DIRECTORY "${build_dir}/"
     )
 
 install(DIRECTORY "${build_dir}/"
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/libs"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/libs"
     COMPONENT Development
     FILES_MATCHING
     PATTERN "python*.lib"
@@ -112,18 +112,18 @@ install(DIRECTORY "${build_dir}/"
 install(CODE "
     file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/lib\")
     file(CREATE_LINK
-        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/libs/${library_name}.lib\"
+        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/libs/${library_name}.lib\"
         \"\${CMAKE_INSTALL_PREFIX}/lib/${library_name}.lib\")
     "
     COMPONENT Development
     )
 
 install(DIRECTORY "${source_dir}/Include/"
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/include"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/include"
     COMPONENT Development
     )
 
 install(FILES "${source_dir}/PC/pyconfig.h"
-    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/include"
+    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/include"
     COMPONENT Development
     )

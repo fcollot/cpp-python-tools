@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_ABSTRACT_OBJECT_H
@@ -16,8 +16,6 @@
 ///
 
 #include "../external/cpython.h"
-
-#include <vector>
 
 #include "../conversion.h"
 #include "../error.h"
@@ -69,7 +67,7 @@ public:
 
     /// Equivalent to the Python expression 'dir(o)'
     ///
-    QList<QString> dir() const;
+    std::vector<std::string> dir() const;
 
     operator bool() const;
     bool operator!() const;

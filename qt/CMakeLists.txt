@@ -1,13 +1,5 @@
-# Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
+# Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
-
-################################################################################
-# Settings
-################################################################################
-
-if(APPLE)
-    option(PYNCPP_EXAMPLES_FRAMEWORKS "Build examples as frameworks." ON)
-endif()
 
 ################################################################################
 # Configuration
@@ -23,7 +15,7 @@ set(cmake_args
     -D "PYNCPP_VERSION_MAJOR:STRING=${PYNCPP_VERSION_MAJOR}"
     -D "PYNCPP_VERSION_MINOR:STRING=${PYNCPP_VERSION_MINOR}"
     -D "PYNCPP_VERSION_PATCH:STRING=${PYNCPP_VERSION_PATCH}"
-    -D "PYNCPP_EXAMPLES_FRAMEWORKS:BOOL=${PYNCPP_EXAMPLES_FRAMEWORKS}"
+    -D "PYNCPP_SHARE_SUBDIR:PATH=${PYNCPP_SHARE_SUBDIR}"
     )
 
 set(prefix "${CMAKE_CURRENT_BINARY_DIR}")
@@ -32,23 +24,43 @@ set(prefix "${CMAKE_CURRENT_BINARY_DIR}")
 # External project
 ################################################################################
 
-set(depends pyncpp)
-
-if(PYNCPP_QT5 OR PYNCPP_QT6)
-    set(depends ${depends} pyncpp_qt)
-endif()
-
-ExternalProject_Add(pyncpp_examples
+ExternalProject_Add(pyncpp_qt
     PREFIX "${prefix}"
     DOWNLOAD_DIR "${prefix}/download"
     SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source"
     BINARY_DIR "${prefix}/build"
     STAMP_DIR "${prefix}/stamp"
     TMP_DIR "${prefix}/tmp"
-    DEPENDS ${depends}
+    DEPENDS pyncpp
     CMAKE_ARGS ${cmake_args}
     INSTALL_COMMAND ${CMAKE_COMMAND}
     --install "<BINARY_DIR>"
     --prefix "${PROJECT_BINARY_DIR}"
     --config $<CONFIG>
+    )
+
+################################################################################
+# Install
+################################################################################
+
+install(CODE "
+    execute_process(COMMAND ${CMAKE_COMMAND}
+        -D \"CMAKE_INSTALL_PREFIX:PATH=\${CMAKE_INSTALL_PREFIX}\"
+        -D \"CMAKE_INSTALL_CONFIG_NAME:STRING=\$<CONFIG>\"
+        -D \"CMAKE_INSTALL_COMPONENT:STRING=Runtime\"
+        -P \"${prefix}/build/cmake_install.cmake\"
+        )
+    "
+    COMPONENT Runtime
+    )
+
+install(CODE "
+    execute_process(COMMAND ${CMAKE_COMMAND}
+        -D \"CMAKE_INSTALL_PREFIX:PATH=\${CMAKE_INSTALL_PREFIX}\"
+        -D \"CMAKE_INSTALL_CONFIG_NAME:STRING=\$<CONFIG>\"
+        -D \"CMAKE_INSTALL_COMPONENT:STRING=Development\"
+        -P \"${prefix}/build/cmake_install.cmake\"
+        )
+    "
+    COMPONENT Development
     )

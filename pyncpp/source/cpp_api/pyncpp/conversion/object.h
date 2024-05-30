@@ -1,4 +1,4 @@
-// Copyright (c) 2022 IHU Liryc, Université de Bordeaux, Inria.
+// Copyright (c) 2022, 2024 IHU Liryc, Université de Bordeaux, Inria.
 // License: BSD-3-Clause
 
 #ifndef PYNCPP_CONVERSION_OBJECT_H
@@ -16,7 +16,7 @@ class Object;
 
 } // namespace pyncpp
 
-PYNCPP_EXPORT bool pyncppToPython(pyncpp::AbstractObject& object, PyObject** output);
+PYNCPP_EXPORT bool pyncppToPythonx(const pyncpp::AbstractObject& object, PyObject** output);
 PYNCPP_EXPORT bool pyncppToCPP(PyObject* nativeObject, pyncpp::Object* output);
 
 #endif // PYNCPP_CONVERSION_OBJECT_H
