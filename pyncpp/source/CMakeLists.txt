@@ -12,28 +12,21 @@ cmake_policy(SET CMP0068 NEW) # RPATH settings on macOS do not affect install_na
 # Project
 ################################################################################
 
-set(PYNCPP_VERSION "${PYNCPP_VERSION_MAJOR}.${PYNCPP_VERSION_MINOR}.${PYNCPP_VERSION_PATCH}")
 project(pyncpp VERSION "${PYNCPP_VERSION}")
 
 ################################################################################
 # Dependencies
 ################################################################################
 
-find_package(pyncpp REQUIRED)
+find_package(pyncpp REQUIRED
+    COMPONENTS python
+    )
 
 ################################################################################
 # Subdirectories
 ################################################################################
 
+add_subdirectory(config)
 add_subdirectory(cpp_api)
 add_subdirectory(executable)
-add_subdirectory(tools)
-
-################################################################################
-# Install/Export
-################################################################################
-
-install(EXPORT pyncpp_exports
-    DESTINATION "${PYNCPP_SHARE_SUBDIR}"
-    COMPONENT Development
-    )
+add_subdirectory(python_api)

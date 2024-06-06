@@ -21,30 +21,17 @@ add_executable(pyncpp_executable
     ${sources}
     )
 
+file(RELATIVE_PATH relative_lib_dir "/${pyncpp_UTILS_SUBDIR}" "/${pyncpp_LIBRARY_SUBDIR}")
+
 if(APPLE)
-    set(rpath "@executable_path/../lib")
+    set(rpath "@executable_path/${relative_lib_dir}")
 elseif(LINUX)
-    set(rpath "\$ORIGIN/../lib")
+    set(rpath "\$ORIGIN/${relative_lib_dir}")
 endif()
 
 set_target_properties(pyncpp_executable PROPERTIES
     OUTPUT_NAME pyncpp
     INSTALL_RPATH ${rpath}
-    )
-
-file(RELATIVE_PATH python_home "${pyncpp_ROOT}/bin" "${pyncpp_PYTHON_DIR}")
-
-if(WIN32)
-    set(os_name WINDOWS)
-elseif(LINUX)
-    set(os_name LINUX)
-elseif(APPLE)
-    set(os_name MACOS)
-endif()
-
-target_compile_definitions(pyncpp_executable PUBLIC
-    PYTHON_HOME="${python_home}"
-    OS_${os_name}
     )
 
 ################################################################################
@@ -60,9 +47,12 @@ target_link_libraries(pyncpp_executable PUBLIC
 ################################################################################
 
 install(TARGETS pyncpp_executable
-    EXPORT pyncpp_exports
+    EXPORT pyncpp_export_executable
 
     RUNTIME
-    DESTINATION "bin"
-    COMPONENT Development
+    DESTINATION "${PYNCPP_UTILS_SUBDIR}"
+    )
+
+install(EXPORT pyncpp_export_executable
+    DESTINATION "${PYNCPP_SHARE_SUBDIR}"
     )

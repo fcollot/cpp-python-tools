@@ -1,39 +1,29 @@
 # Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
+cmake_policy(SET CMP0057 NEW) # IN_LIST operator
+
+@PACKAGE_INIT@
+
 include(CMakeFindDependencyMacro)
 
-set(@PACKAGE@_DIR)
+set(@PACKAGE_NAME@_DIR)
 
 get_directory_property(_previous_targets IMPORTED_TARGETS)
 
-find_dependency(@PACKAGE@
-    COMPONENTS ${@PACKAGE@_FIND_COMPONENTS}
+find_dependency(@PACKAGE_NAME@ @PACKAGE_VERSION@
+    COMPONENTS ${@PACKAGE_NAME@_FIND_COMPONENTS}
     )
 
-set(@PACKAGE@_DIR)
-set(@PACKAGE@_FOUND TRUE)
+set(@PACKAGE_NAME@_DIR)
+set(@PACKAGE_NAME@_FOUND TRUE)
 
-set(_binary_dir "@PACKAGE_BINARY_DIR@")
-
-file(GLOB_RECURSE _possible_subdirs LIST_DIRECTORIES TRUE RELATIVE ${_binary_dir} "${_binary_dir}/*")
-set(_binary_subdirs)
-set(@PACKAGE@_LIBRARY_PATHS ${_binary_dir})
-
-foreach(_subdir ${_possible_subdirs})
-    if(IS_DIRECTORY "${_binary_dir}/${_subdir}")
-        list(APPEND _subdirs ${_subdir})
-        list(APPEND @PACKAGE@_LIBRARY_PATHS "${_binary_dir}/${_subdir}")
-    endif()
-endforeach()
-
-list(JOIN _subdirs "|" _subdirs_regex)
-set(_location_regex "^.*/(${_subdirs_regex}/)?((.*${CMAKE_SHARED_LIBRARY_SUFFIX})|(.*\.framework/.*))$")
+set(@PACKAGE_NAME@_RPATHS)
 
 get_directory_property(_imported_targets IMPORTED_TARGETS)
 
 foreach(_target ${_imported_targets})
-    if(NOT _target IN_LIST _previous_targets AND _target MATCHES "^@PACKAGE@::")
+    if(NOT _target IN_LIST _previous_targets)
         get_target_property(_location ${_target} IMPORTED_LOCATION)
 
         set(_location_variable)
@@ -54,15 +44,27 @@ foreach(_target ${_imported_targets})
         endif()
 
         if(_location_variable)
-            if(_location MATCHES "${_location_regex}")
-                set(_new_location "${_binary_dir}/${CMAKE_MATCH_1}/${CMAKE_MATCH_2}")
+            cmake_path(GET _location FILENAME library_name)
+            file(GLOB_RECURSE python_library "@PACKAGE_BINARY_DIR@/${library_name}")
+
+            if(python_library)
+                cmake_path(GET python_library PARENT_PATH rpath)
+
+                if(rpath MATCHES "^(.*)/.*\.framework(/.*)?$")
+                    set(rpath "${CMAKE_MATCH_1}")
+                endif()
+
+                if(NOT rpath MATCHES "^.*/plugins(/.*)?$")
+                    list(APPEND @PACKAGE_NAME@_RPATHS ${rpath})
+                endif()
+
                 set_target_properties(${_target} PROPERTIES
-                    IMPORTED_LOCATION "${_new_location}"
+                    IMPORTED_LOCATION "${python_library}"
                     )
                 if(_configs)
                     foreach(_config ${_configs})
                         set_target_properties(${_target} PROPERTIES
-                            IMPORTED_LOCATION_${_config} "${_new_location}"
+                            IMPORTED_LOCATION_${_config} "${python_library}"
                             )
                     endforeach()
                 endif()
@@ -71,6 +73,10 @@ foreach(_target ${_imported_targets})
     endif()
 endforeach()
 
-foreach(_component ${@PACKAGE@_FIND_COMPONENTS})
-    set(@PACKAGE@_${component}_FOUND TRUE)
+list(REMOVE_DUPLICATES @PACKAGE_NAME@_RPATHS)
+
+foreach(_component ${@PACKAGE_NAME@_FIND_COMPONENTS})
+    set(@PACKAGE_NAME@_${_component}_FOUND TRUE)
 endforeach()
+
+check_required_components(@PACKAGE_NAME@)

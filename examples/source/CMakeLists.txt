@@ -12,48 +12,32 @@ cmake_policy(SET CMP0068 NEW) # RPATH settings on macOS do not affect install_na
 # Project
 ################################################################################
 
-set(PYNCPP_EXAMPLES_VERSION "${PYNCPP_VERSION_MAJOR}.${PYNCPP_VERSION_MINOR}.${PYNCPP_VERSION_PATCH}")
-project(pyncpp_examples VERSION "${PYNCPP_EXAMPLES_VERSION}")
-
-################################################################################
-# Settings
-################################################################################
-
-if(APPLE)
-#    if(PYNCPP_EXAMPLES_FRAMEWORKS)
-#        set(CMAKE_MACOSX_BUNDLE TRUE)
-#    else()
-        list(APPEND CMAKE_INSTALL_RPATH "@executable_path/../lib")
-#    endif()
-elseif(UNIX)
-    list(APPEND CMAKE_INSTALL_RPATH "\${ORIGIN}/../lib")
-endif()
+project(pyncpp_examples VERSION "${PYNCPP_VERSION}")
 
 ################################################################################
 # Dependencies
 ################################################################################
 
 find_package(pyncpp REQUIRED
-    OPTIONAL_COMPONENTS Qt5 Qt6
+    OPTIONAL_COMPONENTS qt5 qt6
     )
 
 set(qt_versions)
 
-if(pyncpp_Qt5_FOUND)
+if(pyncpp_qt5_FOUND)
     list(APPEND qt_versions 5)
 endif()
 
-if(pyncpp_Qt6_FOUND)
+if(pyncpp_qt6_FOUND)
     list(APPEND qt_versions 6)
 endif()
 
+file(RELATIVE_PATH relative_lib_dir "/${pyncpp_UTILS_SUBDIR}" "/${pyncpp_LIBRARY_SUBDIR}")
+
 if(APPLE)
-    foreach(qt_version ${qt_versions})
-        find_package(Qt${qt_version} REQUIRED COMPONENTS Core Widgets)
-        get_target_property(_qmake_executable Qt${qt_version}::qmake IMPORTED_LOCATION)
-        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
-        find_program(MACDEPLOYQT{qt_version} macdeployqt HINTS "${_qt_bin_dir}")
-    endforeach()
+    set(rpath "@executable_path/${relative_lib_dir}")
+elseif(LINUX)
+    set(rpath "\$ORIGIN/${relative_lib_dir}")
 endif()
 
 ################################################################################

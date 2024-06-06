@@ -4,6 +4,6 @@
 foreach(_version 5 6)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Qt${_version}Config.cmake")
         set(Qt${_version}_DIR "${CMAKE_CURRENT_LIST_DIR}")
-        set(pyncpp_Qt${_version}_FOUND TRUE)
+        set(pyncpp_qt${_version}_FOUND TRUE)
     endif()
 endforeach()

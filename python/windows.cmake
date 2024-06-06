@@ -18,7 +18,7 @@ ExternalProject_Add(pyncpp_python
     BUILD_COMMAND ${CMAKE_COMMAND} -E env "<SOURCE_DIR>/PCbuild/build.bat" $<$<CONFIG:Debug>:-d>
     INSTALL_COMMAND ${CMAKE_COMMAND}
     --install "${CMAKE_CURRENT_BINARY_DIR}"
-    --prefix "${PYNCPP_PYTHON_DIR}"
+    --prefix "${PYNCPP_ROOT}"
     --config $<CONFIG>
     )
 
@@ -36,13 +36,6 @@ ExternalProject_Add_Step(pyncpp_python post_install
 set(build_dir ${CMAKE_CURRENT_BINARY_DIR}/source/PCBuild/amd64)
 set(source_dir ${CMAKE_CURRENT_BINARY_DIR}/source)
 
-install(PROGRAMS
-    "${build_dir}/pythonw$<$<CONFIG:Debug>:_d>.exe"
-    "${build_dir}/python$<$<CONFIG:Debug>:_d>.exe"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}"
-    COMPONENT Runtime
-    )
-
 set(runtime_files
     "${build_dir}/${library_name}.dll"
     "${build_dir}/python${PYNCPP_PYTHON_VERSION_MAJOR}$<$<CONFIG:Debug>:_d>.dll"
@@ -50,40 +43,42 @@ set(runtime_files
     )
 
 install(FILES ${runtime_files}
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}"
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}"
     COMPONENT Runtime
     )
 
+file(RELATIVE_PATH relative_python_home "/${PYNCPP_LIBRARY_SUBDIR}" "/${PYNCPP_PYTHON_SUBDIR}")
+
 install(CODE "
-    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/${library_name}._pth\"
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/${library_name}._pth\"
         \".\\n\"
         \"Lib\\n\"
         \"DLLs\\n\"
         \"import site\"
         )
-    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/bin/${library_name}._pth\"
-        \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}\\n\"
-        \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}/Lib\\n\"
-        \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}/DLLs\\n\"
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_LIBRARY_SUBDIR}/${library_name}._pth\"
+        \"${relative_python_home}\\n\"
+        \"${relative_python_home}/Lib\\n\"
+        \"${relative_python_home}/DLLs\\n\"
         \"import site\"
         )
     file(CREATE_LINK
-        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/${library_name}.dll\"
-        \"\${CMAKE_INSTALL_PREFIX}/bin/${library_name}.dll\")
+        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/${library_name}.dll\"
+        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_LIBRARY_SUBDIR}/${library_name}.dll\")
     "
     COMPONENT Runtime
     )
 
 install(DIRECTORY "${source_dir}/Lib/"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/Lib"
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/Lib"
     COMPONENT Runtime
     PATTERN "*.pyc" EXCLUDE
     )
 
 install(CODE "
-    if(NOT \"\${CMAKE_INSTALL_PREFIX}\" STREQUAL \"${PROJECT_BINARY_DIR}\")
+    if(NOT \"\${CMAKE_INSTALL_PREFIX}\" STREQUAL \"${PYNCPP_ROOT}\")
         file(INSTALL \"${PYNCPP_PYTHON_DIR}/Lib/site-packages\"
-            DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/Lib\"
+            DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/Lib\"
             PATTERN \"*.pyc\" EXCLUDE
             )
     endif()
@@ -92,7 +87,7 @@ install(CODE "
     )
 
 install(DIRECTORY "${build_dir}/"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/DLLs"
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/DLLs"
     COMPONENT Runtime
     FILES_MATCHING
     PATTERN "*.dll"
@@ -102,28 +97,23 @@ install(DIRECTORY "${build_dir}/"
     )
 
 install(DIRECTORY "${build_dir}/"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/libs"
-    COMPONENT Development
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/libs"
     FILES_MATCHING
     PATTERN "python*.lib"
     PATTERN "python*.exp"
     )
 
 install(CODE "
-    file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/lib\")
     file(CREATE_LINK
-        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_INSTALL_SUBDIR}/libs/${library_name}.lib\"
-        \"\${CMAKE_INSTALL_PREFIX}/lib/${library_name}.lib\")
+        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_PYTHON_SUBDIR}/libs/${library_name}.lib\"
+        \"\${CMAKE_INSTALL_PREFIX}/${PYNCPP_ARCHIVE_SUBDIR}/${library_name}.lib\")
     "
-    COMPONENT Development
     )
 
 install(DIRECTORY "${source_dir}/Include/"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/include"
-    COMPONENT Development
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/include"
     )
 
 install(FILES "${source_dir}/PC/pyconfig.h"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/include"
-    COMPONENT Development
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/include"
     )

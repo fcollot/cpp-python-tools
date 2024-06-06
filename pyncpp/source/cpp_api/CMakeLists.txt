@@ -66,6 +66,23 @@ add_library(pyncpp_cpp_api SHARED
     )
 
 ################################################################################
+# Compile definitions
+################################################################################
+
+if(WIN32)
+    set(os_name WINDOWS)
+elseif(LINUX)
+    set(os_name LINUX)
+elseif(APPLE)
+    set(os_name MACOS)
+endif()
+
+target_compile_definitions(pyncpp_cpp_api_static PUBLIC
+    DEFAULT_PYTHON_HOME="${pyncpp_RELATIVE_PYTHON_DIR}"
+    OS_${os_name}
+    )
+
+################################################################################
 # Includes
 ################################################################################
 
@@ -74,7 +91,7 @@ target_include_directories(pyncpp_cpp_api_static
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/pyncpp"
     PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-    "$<INSTALL_INTERFACE:include/pyncpp/cpp_api>"
+    "$<INSTALL_INTERFACE:${pyncpp_INCLUDE_SUBDIR}/pyncpp/cpp_api>"
     )
 
 ################################################################################
@@ -94,23 +111,26 @@ target_link_libraries(pyncpp_cpp_api PUBLIC
 ################################################################################
 
 install(TARGETS pyncpp_cpp_api_static pyncpp_cpp_api
-    EXPORT pyncpp_exports
+    EXPORT pyncpp_export_cpp_api
 
     RUNTIME
-    DESTINATION "bin"
+    DESTINATION "${pyncpp_RUNTIME_SUBDIR}"
     COMPONENT Runtime
 
     LIBRARY
-    DESTINATION "lib"
+    DESTINATION "${pyncpp_LIBRARY_SUBDIR}"
     COMPONENT Runtime
 
     ARCHIVE
-    DESTINATION "lib"
-    COMPONENT Development
+    DESTINATION "${pyncpp_ARCHIVE_SUBDIR}"
+    )
+
+install(EXPORT pyncpp_export_cpp_api
+    DESTINATION "${pyncpp_SHARE_SUBDIR}"
     )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
-    DESTINATION "include/pyncpp/cpp_api"
-    COMPONENT Development
+    DESTINATION "${pyncpp_INCLUDE_SUBDIR}/pyncpp/cpp_api"
+    PATTERN "*.h"
     PATTERN "CMakeLists.txt" EXCLUDE
     )

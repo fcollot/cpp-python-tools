@@ -31,6 +31,15 @@ void raiseError(const char* message)
     EXCEPTION_TYPE::raise(message);
 }
 
+/// Raises the Python error corresponding to the C++ exception.
+/// (The exception must be BaseException or a subclass).
+///
+template <class EXCEPTION_TYPE>
+void raiseError(EXCEPTION_TYPE* exception)
+{
+    EXCEPTION_TYPE::raise(exception->what());
+}
+
 /// Checks if a Python error was raised. The corresponding exception can be
 /// fetched with retrieveNativeException().
 ///

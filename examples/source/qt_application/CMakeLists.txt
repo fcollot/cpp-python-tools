@@ -1,9 +1,21 @@
 # Copyright (c) 2022-2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
-foreach(qt_version ${qt_versions})
+foreach(PYNCPP_QT_VERSION ${qt_versions})
 
-    set(target qt${qt_version}_application)
+    set(target qt${PYNCPP_QT_VERSION}_application)
+
+    ############################################################################
+    # Dependencies
+    ############################################################################
+
+    if(PYNCPP_QT_VERSION EQUAL 5)
+        set(PYNCPP_PYSIDE_VERSION 2)
+    else()
+        set(PYNCPP_PYSIDE_VERSION 6)
+    endif()
+
+    find_package(Qt${PYNCPP_QT_VERSION} REQUIRED COMPONENTS Core Widgets)
 
     ############################################################################
     # Executable
@@ -13,16 +25,42 @@ foreach(qt_version ${qt_versions})
         main.cpp
         )
 
-    file(RELATIVE_PATH python_home "${pyncpp_ROOT}/bin" "${pyncpp_PYTHON_DIR}")
-
-    target_compile_definitions(${target} PUBLIC
-        PYTHON_HOME="${python_home}"
-        )
-
-    set(rpath ${CMAKE_INSTALL_RPATH} ${Qt6_PATHS})
+    set(rpath ${CMAKE_INSTALL_RPATH} ${Qt6_RPATHS})
 
     set_target_properties(${target} PROPERTIES
         INSTALL_RPATH "${rpath}"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        )
+
+    target_compile_definitions(${target} PUBLIC
+        PYNCPP_QT_VERSION=${PYNCPP_QT_VERSION}
+        )
+
+    ############################################################################
+    # Python
+    ############################################################################
+
+    set(subdir "pyncpp_examples/qt")
+
+    file(GLOB_RECURSE python_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.py"
+        )
+
+    foreach(file ${python_files})
+        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/${file}"
+            "${CMAKE_CURRENT_BINARY_DIR}/qt${PYNCPP_QT_VERSION}/${subdir}${PYNCPP_QT_VERSION}/${file}"
+            @ONLY
+            )
+    endforeach()
+
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/setup.py"
+        "${CMAKE_CURRENT_BINARY_DIR}/qt${PYNCPP_QT_VERSION}/setup.py"
+        @ONLY
+        )
+
+    add_custom_target(${target}_python ALL
+        COMMAND ${pyncpp_EXECUTABLE} -m pip install "${CMAKE_CURRENT_BINARY_DIR}/qt${PYNCPP_QT_VERSION}"
+        VERBATIM
         )
 
     ############################################################################
@@ -31,40 +69,17 @@ foreach(qt_version ${qt_versions})
 
     target_link_libraries(${target} PUBLIC
         ${pyncpp_CPP_API_LIBRARY}
-        Qt${qt_version}::Core
-        Qt${qt_version}::Widgets
+        Qt${PYNCPP_QT_VERSION}::Core
+        Qt${PYNCPP_QT_VERSION}::Widgets
         )
 
     ############################################################################
     # Install
     ############################################################################
 
-    add_custom_target(${target}_python ALL
-        COMMAND ${pyncpp_EXECUTABLE} -m pip install "${CMAKE_CURRENT_SOURCE_DIR}"
-        VERBATIM
-        )
-
-    #if(PYNCPP_EXAMPLES_FRAMEWORKS)
-    #    install(TARGETS qt_application
-    #        BUNDLE
-    #        DESTINATION bin
-    #        COMPONENT qt_application
-    #        )
-
-    #    set(_bundle_install_path "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/qt_application.app")
-
-    #    install(CODE "
-    #        execute_process(COMMAND ${MACDEPLOYQT_EXECUTABLE} \"${_bundle_install_path}\")
-    #        include(BundleUtilities)
-    #        fixup_bundle(\"${_bundle_install_path}\" \"\" \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib\")
-    #        "
-    #        COMPONENT qt_application
-    #        )
-    #else()
     install(TARGETS ${target}
         RUNTIME
-        DESTINATION "bin"
+        DESTINATION "${pyncpp_EXAMPLES_SUBDIR}"
         )
-    #endif()
 
 endforeach()

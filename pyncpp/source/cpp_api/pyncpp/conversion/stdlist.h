@@ -46,7 +46,7 @@ bool pyncppToPython(const std::list<TYPE>& stdList, PyObject** output)
     {
         PyObject* pythonItem;
 
-        if (pyncppToPythonx(item, &pythonItem))
+        if (pyncppToPython(item, &pythonItem))
         {
             objectList.push_back(pythonItem);
         }

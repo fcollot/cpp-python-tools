@@ -83,6 +83,8 @@ endif()
 
 set(library_path "${PYNCPP_PYTHON_DIR}/lib/${library_name}")
 
+file(RELATIVE_PATH relative_python_home "/${PYNCPP_LIBRARY_SUBDIR}" "/${PYNCPP_PYTHON_SUBDIR}")
+
 ################################################################################
 # External project
 ################################################################################
@@ -103,7 +105,9 @@ ExternalProject_Add(pyncpp_python
 ExternalProject_Add_Step(pyncpp_python post_install
     DEPENDEES install
     COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id "@rpath/${library_name}" "${library_path}"
-    COMMAND ${CMAKE_COMMAND} -E create_symlink "${PYNCPP_PYTHON_DIR}/lib/${library_name}" "${CMAKE_BINARY_DIR}/lib/${library_name}"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    "${relative_python_home}/lib/${library_name}"
+    "${PYNCPP_ROOT}/${PYNCPP_LIBRARY_SUBDIR}/${library_name}"
     )
 
 ################################################################################
@@ -112,13 +116,13 @@ ExternalProject_Add_Step(pyncpp_python post_install
 
 install(FILES
     "${library_path}"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/lib"
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/lib"
     COMPONENT Runtime
     )
 
 install(CODE "
-    file(CREATE_LINK \"../${PYNCPP_PYTHON_INSTALL_SUBDIR}/lib/${library_name}\"
-        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/${library_name}\"
+    file(CREATE_LINK \"${relative_python_home}/lib/${library_name}\"
+        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${PYNCPP_LIBRARY_SUBDIR}/${library_name}\"
         SYMBOLIC
         )
     "
@@ -126,12 +130,11 @@ install(CODE "
     )
 
 install(DIRECTORY "${PYNCPP_PYTHON_DIR}/lib/python${PYNCPP_PYTHON_SHORT_VERSION}"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/lib"
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/lib"
     COMPONENT Runtime
     PATTERN "*.pyc" EXCLUDE
     )
 
 install(DIRECTORY "${PYNCPP_PYTHON_DIR}/include/"
-    DESTINATION "${PYNCPP_PYTHON_INSTALL_SUBDIR}/include"
-    COMPONENT Development
+    DESTINATION "${PYNCPP_PYTHON_SUBDIR}/include"
     )

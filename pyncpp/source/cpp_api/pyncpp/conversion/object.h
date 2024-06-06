@@ -16,7 +16,7 @@ class Object;
 
 } // namespace pyncpp
 
-PYNCPP_EXPORT bool pyncppToPythonx(const pyncpp::AbstractObject& object, PyObject** output);
+PYNCPP_EXPORT bool pyncppToPython(const pyncpp::AbstractObject& object, PyObject** output);
 PYNCPP_EXPORT bool pyncppToCPP(PyObject* nativeObject, pyncpp::Object* output);
 
 #endif // PYNCPP_CONVERSION_OBJECT_H

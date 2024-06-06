@@ -2,14 +2,6 @@
 # License: BSD-3-Clause
 
 ################################################################################
-# Settings
-################################################################################
-
-if(APPLE)
-    option(PYNCPP_EXAMPLES_FRAMEWORKS "Build examples as frameworks." ON)
-endif()
-
-################################################################################
 # Configuration
 ################################################################################
 
@@ -19,11 +11,8 @@ set(cmake_args
     -D "CMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}"
     -D "CMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}"
     -D "CMAKE_MAKE_PROGRAM:PATH=${CMAKE_MAKE_PROGRAM}"
-    -D "pyncpp_ROOT:PATH=${PROJECT_BINARY_DIR}"
-    -D "PYNCPP_VERSION_MAJOR:STRING=${PYNCPP_VERSION_MAJOR}"
-    -D "PYNCPP_VERSION_MINOR:STRING=${PYNCPP_VERSION_MINOR}"
-    -D "PYNCPP_VERSION_PATCH:STRING=${PYNCPP_VERSION_PATCH}"
-    -D "PYNCPP_EXAMPLES_FRAMEWORKS:BOOL=${PYNCPP_EXAMPLES_FRAMEWORKS}"
+    -D "pyncpp_ROOT:PATH=${PYNCPP_ROOT}"
+    -D "PYNCPP_VERSION:STRING=${PYNCPP_VERSION}"
     )
 
 set(prefix "${CMAKE_CURRENT_BINARY_DIR}")
@@ -49,6 +38,6 @@ ExternalProject_Add(pyncpp_examples
     CMAKE_ARGS ${cmake_args}
     INSTALL_COMMAND ${CMAKE_COMMAND}
     --install "<BINARY_DIR>"
-    --prefix "${PROJECT_BINARY_DIR}"
+    --prefix "${PYNCPP_ROOT}"
     --config $<CONFIG>
     )

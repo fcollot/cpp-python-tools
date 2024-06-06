@@ -5,14 +5,6 @@
 
 #include <QApplication>
 #include <QMainWindow>
-#include <QThread>
-
-int pythonExitStatus;
-
-void runPython(int argc, char** argv)
-{
-
-}
 
 int main(int argc, char** argv)
 {
@@ -20,8 +12,6 @@ int main(int argc, char** argv)
 
     QApplication app(argc, argv);
 
-    QString pythonHome = app.applicationDirPath() + "/" + PYTHON_HOME;
-    pyncpp::Manager::setPythonHome(qUtf8Printable(pythonHome));
     pyncpp::Manager::setCommandLineArguments(argc, argv);
     pyncpp::Manager pyncppManager = pyncpp::Manager::instance();
 
@@ -34,13 +24,9 @@ int main(int argc, char** argv)
     {
         try
         {
-            pyncpp::Object appPointer = PyLong_FromVoidPtr(&app);
-            pyncpp::Module qtWidgetsModule = pyncpp::Module::import("PySide6.QtWidgets");
-            pyncpp::Object qApplicationClass = qtWidgetsModule.attribute("QApplication");
-            pyncpp::Module consoleModule = pyncpp::Module::import("qt_console");
-            qDebug() << "-------------------";
-            pyncpp::Object pyApp = consoleModule.callMethod<pyncpp::Object, pyncpp::Object>("wrapInstance2", appPointer, qApplicationClass);
-            pyncpp::Module::import("__main__").attribute("app") = pyApp;
+            pyncpp::Module consoleModule = pyncpp::Module::import(qUtf8Printable(QString("pyncpp_examples.qt%1").arg(PYNCPP_QT_VERSION)));
+            //pyncpp::Object pyApp = consoleModule.callMethod<pyncpp::Object, pyncpp::Object>("wrapInstance", appPointer, qApplicationClass);
+            //pyncpp::Module::import("__main__").attribute("app") = pyApp;
             consoleModule.callMethod("runConsole");
 //            QWidget* console = d->console->toCPP<QWidget*>();
 //            console->setWindowTitle("woohooo!!");

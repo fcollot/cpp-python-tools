@@ -5,7 +5,7 @@
 
 #include "../object/object.h"
 
-bool pyncppToPythonx(const pyncpp::AbstractObject& object, PyObject** output)
+bool pyncppToPython(const pyncpp::AbstractObject& object, PyObject** output)
 {
     *output = object.newReference();
     return true;

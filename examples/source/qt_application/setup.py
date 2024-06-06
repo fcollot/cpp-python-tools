@@ -6,10 +6,9 @@ from distutils.core import setup
 
 
 setup_options = {
-    'name': 'qt_console',
-    'version': '1.0.0',
-    'py_modules': ['qt_console'],
-    'install_requires': [],
+    'name': '@PROJECT_NAME@',
+    'version': '@PROJECT_VERSION@',
+    'packages': ['pyncpp_examples.qt@PYNCPP_QT_VERSION@']
 }
 
 

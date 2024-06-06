@@ -41,6 +41,8 @@ private:
     static std::unique_ptr<Manager> static_instance;
     ManagerPrivate* const d;
 
+    static std::filesystem::path getExecutablePath();
+
     void initializeInterpreterIfNeeded();
     void initializeAPI();
 

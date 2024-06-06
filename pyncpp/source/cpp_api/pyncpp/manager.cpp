@@ -3,6 +3,12 @@
 
 #include "manager.h"
 
+#if OS_WINDOWS
+#elif OS_MACOS
+#include <mach-o/dyld.h>
+#elif OS_LINUX
+#endif
+
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -32,7 +38,14 @@ std::string ManagerPrivate::mainModule;
 
 void Manager::setPythonHome(const std::filesystem::path& pythonHome)
 {
-    ManagerPrivate::pythonHome = pythonHome;
+    if (pythonHome.is_relative())
+    {
+        ManagerPrivate::pythonHome = getExecutablePath().parent_path() / pythonHome;
+    }
+    else
+    {
+        ManagerPrivate::pythonHome = pythonHome;
+    }
 }
 
 void Manager::setCommandLineArguments(int argc, char** argv)
@@ -55,6 +68,11 @@ Manager& Manager::instance()
 {
     if (!static_instance)
     {
+        if (ManagerPrivate::pythonHome.empty())
+        {
+            setPythonHome(DEFAULT_PYTHON_HOME);
+        }
+
         static_instance = std::unique_ptr<Manager>(new Manager);
     }
 
@@ -98,6 +116,30 @@ std::filesystem::path Manager::getPythonHome()
 int Manager::runMain()
 {
     return Py_RunMain();
+}
+
+std::filesystem::path Manager::getExecutablePath()
+{
+    std::filesystem::path path;
+
+#if OS_WINDOWS
+    wchar_t buffer[MAX_PATH];
+    if (GetModuleFileName(nullptr, buffer, MAX_PATH) != 0)
+    {
+        path = buffer;
+    }
+#elif OS_MACOS
+    char buffer[PATH_MAX];
+    uint32_t bufferSize = PATH_MAX;
+    if(_NSGetExecutablePath(buffer, &bufferSize) == 0)
+    {
+        path = buffer;
+    }
+#elif OS_LINUX
+    path = "/proc/self/exe"
+#endif
+
+    return std::filesystem::canonical(path);
 }
 
 void Manager::initializeInterpreterIfNeeded()

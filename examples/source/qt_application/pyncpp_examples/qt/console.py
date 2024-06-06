@@ -3,9 +3,9 @@
 
 
 import sys, code
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import QApplication, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
+from PySide@PYNCPP_PYSIDE_VERSION@.QtCore import Qt
+from PySide@PYNCPP_PYSIDE_VERSION@.QtGui import QKeySequence, QShortcut
+from PySide@PYNCPP_PYSIDE_VERSION@.QtWidgets import QApplication, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
 
 
 class CommandLine(QLineEdit):
@@ -160,12 +160,3 @@ def runConsole():
     console.setAttribute(Qt.WA_QuitOnClose)
     console.show()
     console.run()
-
-
-from shiboken6 import Shiboken
-
-
-def wrapInstance2(address, type):
-    print(address)
-    print(type)
-    return Shiboken.wrapInstance(address, type)
