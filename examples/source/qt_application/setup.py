@@ -6,9 +6,9 @@ from distutils.core import setup
 
 
 setup_options = {
-    'name': '@PROJECT_NAME@',
+    'name': '@PACKAGE_NAME@',
     'version': '@PROJECT_VERSION@',
-    'packages': ['pyncpp_examples.qt@PYNCPP_QT_VERSION@']
+    'packages': ['@PACKAGE_NAME@']
 }
 
 

@@ -43,6 +43,9 @@ public:
     ///
     virtual AbstractObject& operator=(PyObject* reference);
 
+    template <class TYPE>
+    AbstractObject& operator=(const TYPE& value);
+
     /// Replaces the wrapped object with 'reference'. This function does not
     /// take ownership of 'reference' (it increases the reference count). If
     /// 'reference' is null then the Python 'None' object is wrapped instead.
@@ -112,15 +115,10 @@ public:
     /// of pyncppToCPP. The caller owns the returned object.
     ///
     template <class TYPE>
-    TYPE toCPP() const;
+    std::enable_if_t<!std::is_pointer_v<TYPE>, TYPE> toCPP() const;
 
-    /// If this object is a wrapped C++ pointer, returns the pointer, otherwise
-    /// returns nullptr. The caller does not own the pointer.
-    ///
     template <class TYPE>
-    TYPE cppPointer() const;
-
-    void* cppPointer() const;
+    std::enable_if_t<std::is_pointer_v<TYPE>, TYPE> toCPP() const;
 
     // Due to ciruclar dependency issues, the following three template functions
     // are defined in the header file of their respective return types.
@@ -142,7 +140,23 @@ protected:
 };
 
 template <class TYPE>
-TYPE AbstractObject::toCPP() const
+AbstractObject& AbstractObject::operator=(const TYPE& value)
+{
+    PyObject* reference;
+    PYNCPP_ACQUIRE_GIL;
+
+    if (!pyncppToPython(value, &reference))
+    {
+        propagateCurrentError(PYNCPP_GIL_STATE);
+    }
+
+    PYNCPP_RELEASE_GIL;
+    setReference(reference);
+    return *this;
+}
+
+template <class TYPE>
+std::enable_if_t<!std::is_pointer_v<TYPE>, TYPE> AbstractObject::toCPP() const
 {
     TYPE result;
     PYNCPP_ACQUIRE_GIL;
@@ -156,10 +170,19 @@ TYPE AbstractObject::toCPP() const
     return result;
 }
 
-template <class TYPE>
-TYPE AbstractObject::cppPointer() const
+template<class TYPE>
+std::enable_if_t<std::is_pointer_v<TYPE>, TYPE> AbstractObject::toCPP() const
 {
-    return dynamic_cast<TYPE>(cppPointer());
+    TYPE result;
+    PYNCPP_ACQUIRE_GIL;
+
+    if (!pyncppToCPP(**this, &result))
+    {
+        propagateCurrentError(PYNCPP_GIL_STATE);
+    }
+
+    PYNCPP_RELEASE_GIL;
+    return result;
 }
 
 } // namespace pyncpp

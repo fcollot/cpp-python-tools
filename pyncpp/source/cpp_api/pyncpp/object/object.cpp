@@ -6,16 +6,6 @@
 namespace pyncpp
 {
 
-struct ObjectPrivate
-{
-    PyObject* reference;
-};
-
-Object Object::create(const Object& other)
-{
-    return other;
-}
-
 Object Object::borrowed(const PyObject* reference)
 {
     if (!reference)
@@ -30,82 +20,19 @@ Object Object::borrowed(const PyObject* reference)
     return const_cast<PyObject*>(reference);
 }
 
-Object::Object(PyObject* reference) :
-    d(new ObjectPrivate)
+Object::Object(PyObject* reference)
 {
     internalSetReference(reference);
 }
 
-Object::Object(const Object& other) :
-    d(new ObjectPrivate)
+Object::Object(const Object& other)
 {
     internalSetReference(other.newReference());
 }
 
-Object::Object(const AbstractObject& other) :
-    d(new ObjectPrivate)
+Object::Object(const AbstractObject& other)
 {
     internalSetReference(other.newReference());
-}
-
-Object::Object(int value) :
-    d(new ObjectPrivate)
-{
-    PyObject* reference;
-    PYNCPP_ACQUIRE_GIL;
-
-    if (!pyncppToPython(value, &reference))
-    {
-        propagateCurrentError(PYNCPP_GIL_STATE);
-    }
-
-    PYNCPP_RELEASE_GIL;
-    internalSetReference(reference);
-}
-
-Object::Object(double value) :
-    d(new ObjectPrivate)
-{
-    PyObject* reference;
-    PYNCPP_ACQUIRE_GIL;
-
-    if (!pyncppToPython(value, &reference))
-    {
-        propagateCurrentError(PYNCPP_GIL_STATE);
-    }
-
-    PYNCPP_RELEASE_GIL;
-    internalSetReference(reference);
-}
-
-Object::Object(const char* value) :
-    d(new ObjectPrivate)
-{
-    PyObject* reference;
-    PYNCPP_ACQUIRE_GIL;
-
-    if (!pyncppToPython(value, &reference))
-    {
-        propagateCurrentError(PYNCPP_GIL_STATE);
-    }
-
-    PYNCPP_RELEASE_GIL;
-    internalSetReference(reference);
-}
-
-Object::Object(const std::string& value) :
-    d(new ObjectPrivate)
-{
-    PyObject* reference;
-    PYNCPP_ACQUIRE_GIL;
-
-    if (!pyncppToPython(value, &reference))
-    {
-        propagateCurrentError(PYNCPP_GIL_STATE);
-    }
-
-    PYNCPP_RELEASE_GIL;
-    internalSetReference(reference);
 }
 
 Object::~Object()
@@ -114,11 +41,10 @@ Object::~Object()
 
     if (Py_IsInitialized())
     {
-        Py_CLEAR(d->reference);
+        Py_CLEAR(internalReference);
     }
 
     PYNCPP_RELEASE_GIL;
-    delete d;
 }
 
 Object& Object::operator=(const Object& other)
@@ -128,12 +54,12 @@ Object& Object::operator=(const Object& other)
 
 PyObject* Object::getReference() const
 {
-    return d->reference;
+    return internalReference;
 }
 
 void Object::setReference(PyObject* reference)
 {
-    PyObject* oldReference = d->reference;
+    PyObject* oldReference = internalReference;
     internalSetReference(reference);
 
     PYNCPP_ACQUIRE_GIL;
@@ -145,12 +71,12 @@ void Object::internalSetReference(PyObject* reference)
 {
     if (reference)
     {
-        d->reference = reference;
+        internalReference = reference;
     }
     else
     {
         PYNCPP_ACQUIRE_GIL;
-        d->reference = Py_NewRef(Py_None);
+        internalReference = Py_NewRef(Py_None);
         PYNCPP_RELEASE_GIL;
     }
 }

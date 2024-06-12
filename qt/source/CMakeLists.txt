@@ -18,6 +18,7 @@ project(pyncpp_qt VERSION "${PYNCPP_VERSION}")
 # Dependencies
 ################################################################################
 
+set(NO_PYNCPP_QT_TARGETS TRUE)
 find_package(pyncpp REQUIRED)
 
 set(qt_versions)

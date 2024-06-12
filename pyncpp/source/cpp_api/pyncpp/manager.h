@@ -20,20 +20,22 @@ class PYNCPP_EXPORT Manager
 {
 public:
     static void setPythonHome(const std::filesystem::path& pythonHome);
+    static const std::filesystem::path& getPythonHome();
+
+    void addInitialModulePath(const std::filesystem::path& path);
 
     static void setCommandLineArguments(int argc, char** argv);
 
     static void setMainModule(const char* name);
 
-    static Manager& instance();
-
     Manager();
     ~Manager();
 
     bool errorOccured();
+    void clearError();
     const char* errorMessage();
 
-    std::filesystem::path getPythonHome();
+    bool addModulePath(const std::filesystem::path& path);
 
     int runMain();
 
@@ -42,6 +44,7 @@ private:
     ManagerPrivate* const d;
 
     static std::filesystem::path getExecutablePath();
+    static std::filesystem::path absolutePath(const std::filesystem::path& path);
 
     void initializeInterpreterIfNeeded();
     void initializeAPI();

@@ -3,6 +3,7 @@
 
 cmake_policy(SET CMP0057 NEW) # IN_LIST operator
 
+include(CMakeFindDependencyMacro)
 include(CMakePackageConfigHelpers)
 
 @PACKAGE_INIT@

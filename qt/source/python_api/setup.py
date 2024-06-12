@@ -5,7 +5,7 @@
 from distutils.core import setup
 
 
-setup(name='pyncpp_qt@PYNCPP_QT_VERSION@',
+setup(name='pyncpp_qt@QT_VERSION@',
       version='@PROJECT_VERSION@',
-      packages=['pyncpp.qt@PYNCPP_QT_VERSION@'],
+      packages=['pyncpp.qt@QT_VERSION@'],
 )

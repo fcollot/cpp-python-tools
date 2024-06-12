@@ -3,9 +3,9 @@
 
 
 import sys, code
-from PySide@PYNCPP_PYSIDE_VERSION@.QtCore import Qt
-from PySide@PYNCPP_PYSIDE_VERSION@.QtGui import QKeySequence, QShortcut
-from PySide@PYNCPP_PYSIDE_VERSION@.QtWidgets import QApplication, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
+from PySide@PYSIDE_VERSION@.QtCore import Qt
+from PySide@PYSIDE_VERSION@.QtGui import QKeySequence
+from PySide@PYSIDE_VERSION@.QtWidgets import QApplication, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QWidget
 
 
 class CommandLine(QLineEdit):
@@ -153,10 +153,3 @@ class Console(QWidget):
 
     def showEvent(self, event):
         self.setFocus()
-
-
-def runConsole():
-    console = Console((800, 500))
-    console.setAttribute(Qt.WA_QuitOnClose)
-    console.show()
-    console.run()

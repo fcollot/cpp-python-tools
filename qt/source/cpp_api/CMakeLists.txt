@@ -1,83 +1,89 @@
 # Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
 # License: BSD-3-Clause
 
-foreach(PYNCPP_QT_VERSION ${qt_versions})
+set(target_prefix ${PROJECT_NAME}_cpp_api)
 
-    set(target ${PROJECT_NAME}${PYNCPP_QT_VERSION}_cpp_api)
+################################################################################
+# Dependencies
+################################################################################
 
-    if(PYNCPP_QT_VERSION EQUAL 5)
-        set(PYNCPP_SHIBOKEN_VERSION)
+foreach(qt_version ${qt_versions})
+    find_package(Qt${qt_version} REQUIRED COMPONENTS Core Widgets)
+endforeach()
+
+################################################################################
+# Files
+################################################################################
+
+set(headers
+    qt.h
+    console.h
+    conversion/qobject.h
+    )
+
+set(sources
+    console.cpp
+    conversion/qobject.cpp
+    )
+
+################################################################################
+# Library
+################################################################################
+
+foreach(qt_version ${qt_versions})
+    add_library(${target_prefix}_${qt_version} SHARED
+        ${headers}
+        ${sources}
+        )
+endforeach()
+
+################################################################################
+# Compile definitions
+################################################################################
+
+foreach(qt_version ${qt_versions})
+    if(qt_version EQUAL 5)
+        set(shiboken_package "shiboken2")
     else()
-        set(PYNCPP_SHIBOKEN_VERSION 2)
+        set(shiboken_package "shiboken6")
     endif()
 
-    ############################################################################
-    # Dependencies
-    ############################################################################
-
-    find_package(Qt${PYNCPP_QT_VERSION} REQUIRED COMPONENTS Core)
-
-    ############################################################################
-    # Files
-    ############################################################################
-
-    set(headers
-        qt.h
-        conversion/qobject.h
+    target_compile_definitions(${target_prefix}_${qt_version} PUBLIC
+        PYNCPP_QT_VERSION=${qt_version}
+        SHIBOKEN_PACKAGE="${shiboken_package}"
         )
+endforeach()
 
-    set(sources
-        conversion/qobject.cpp
+################################################################################
+# Includes
+################################################################################
+
+#foreach(qt_version ${qt_versions})
+#    target_include_directories(${target_prefix}_${qt_version}
+#        PUBLIC
+#        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+#        )
+#endforeach()
+
+################################################################################
+# Link
+################################################################################
+
+foreach(qt_version ${qt_versions})
+    target_link_libraries(${target_prefix}_${qt_version} PRIVATE
+        ${pyncpp_LIBRARY}
+        Qt${qt_version}::Core
+        Qt${qt_version}::Widgets
         )
+endforeach()
 
-    set(files)
+################################################################################
+# Install/Export
+################################################################################
 
-    foreach(file ${headers} ${sources})
-        set(configured_file "${CMAKE_CURRENT_BINARY_DIR}/qt${PYNCPP_QT_VERSION}/${file}")
-        list(APPEND files "${configured_file}")
-        configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${file}"
-            "${configured_file}"
-            @ONLY
-            )
-    endforeach()
-
-    ############################################################################
-    # Library
-    ############################################################################
-
-    add_library(${target} SHARED
-        ${files}
-        )
-
-    target_compile_definitions(${target} PUBLIC
-        PYNCPP_QT_VERSION=${PYNCPP_QT_VERSION}
-        )
-
-    ############################################################################
-    # Includes
-    ############################################################################
-
-    target_include_directories(${target}
-        PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/qt${PYNCPP_QT_VERSION}>"
-        "$<INSTALL_INTERFACE:include/pyncpp/qt${PYNCPP_QT_VERSION}>"
-        )
-
-    ############################################################################
-    # Link
-    ############################################################################
-
-    target_link_libraries(${target} PUBLIC
-        ${pyncpp_CPP_API_LIBRARY}
-        Qt${PYNCPP_QT_VERSION}::Core
-        )
-
-    ############################################################################
-    # Install/Export
-    ############################################################################
-
-    install(TARGETS ${target}
-        EXPORT ${target}_export
+foreach(qt_version ${qt_versions})
+    install(TARGETS ${target_prefix}_${qt_version}
+        EXPORT ${target_prefix}_${qt_version}_export
 
         RUNTIME
         DESTINATION "${pyncpp_RUNTIME_SUBDIR}"
@@ -91,14 +97,13 @@ foreach(PYNCPP_QT_VERSION ${qt_versions})
         DESTINATION "${pyncpp_ARCHIVE_SUBDIR}"
         )
 
-    install(EXPORT ${target}_export
-        DESTINATION "${PYNCPP_SHARE_SUBDIR}"
+    install(EXPORT ${target_prefix}_${qt_version}_export
+        DESTINATION "${pyncpp_SHARE_SUBDIR}"
         )
-
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/qt${PYNCPP_QT_VERSION}/"
-        DESTINATION ""${pyncpp_INCLUDE_SUBDIR}"/pyncpp/qt${PYNCPP_QT_VERSION}"
-        PATTERN "*.h"
-        PATTERN "CMakeLists.txt" EXCLUDE
-        )
-
 endforeach()
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
+    DESTINATION "${pyncpp_INCLUDE_SUBDIR}/pyncpp/qt"
+    FILES_MATCHING PATTERN "*.h"
+    PATTERN "CMakeLists.txt" EXCLUDE
+    )

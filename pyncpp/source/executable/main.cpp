@@ -13,9 +13,13 @@ int main(int argc, char** argv)
     {
         pyncpp::Manager::setPythonHome(pythonHome);
     }
+    else
+    {
+        pyncpp::Manager::setPythonHome(PYTHON_HOME);
+    }
 
     pyncpp::Manager::setCommandLineArguments(argc, argv);
-    pyncpp::Manager pyncppManager = pyncpp::Manager::instance();
+    pyncpp::Manager pyncppManager;
 
     if (pyncppManager.errorOccured())
     {

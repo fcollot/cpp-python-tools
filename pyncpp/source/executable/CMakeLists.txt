@@ -21,17 +21,36 @@ add_executable(pyncpp_executable
     ${sources}
     )
 
-file(RELATIVE_PATH relative_lib_dir "/${pyncpp_UTILS_SUBDIR}" "/${pyncpp_LIBRARY_SUBDIR}")
+################################################################################
+# Target properties
+################################################################################
 
-if(APPLE)
-    set(rpath "@executable_path/${relative_lib_dir}")
-elseif(LINUX)
-    set(rpath "\$ORIGIN/${relative_lib_dir}")
+if(UNIX)
+    file(RELATIVE_PATH relative_lib_dir "/${pyncpp_UTILS_SUBDIR}" "/${pyncpp_LIBRARY_SUBDIR}")
+
+    if(APPLE)
+        set(rpath "@executable_path/${relative_lib_dir}")
+    else()
+        set(rpath "\$ORIGIN/${relative_lib_dir}")
+    endif()
+
+    set_target_properties(pyncpp_executable PROPERTIES
+        INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${rpath}"
+        )
 endif()
 
 set_target_properties(pyncpp_executable PROPERTIES
     OUTPUT_NAME pyncpp
-    INSTALL_RPATH ${rpath}
+    )
+
+################################################################################
+# Compile definitions
+################################################################################
+
+file(RELATIVE_PATH relative_python_dir "${pyncpp_ROOT}/${pyncpp_UTILS_SUBDIR}" "/${pyncpp_PYTHON_DIR}")
+
+target_compile_definitions(pyncpp_executable PUBLIC
+    PYTHON_HOME="${relative_python_dir}"
     )
 
 ################################################################################
@@ -50,9 +69,9 @@ install(TARGETS pyncpp_executable
     EXPORT pyncpp_export_executable
 
     RUNTIME
-    DESTINATION "${PYNCPP_UTILS_SUBDIR}"
+    DESTINATION "${pyncpp_UTILS_SUBDIR}"
     )
 
 install(EXPORT pyncpp_export_executable
-    DESTINATION "${PYNCPP_SHARE_SUBDIR}"
+    DESTINATION "${pyncpp_SHARE_SUBDIR}"
     )

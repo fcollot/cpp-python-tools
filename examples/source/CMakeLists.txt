@@ -32,13 +32,24 @@ if(pyncpp_qt6_FOUND)
     list(APPEND qt_versions 6)
 endif()
 
-file(RELATIVE_PATH relative_lib_dir "/${pyncpp_UTILS_SUBDIR}" "/${pyncpp_LIBRARY_SUBDIR}")
+file(RELATIVE_PATH relative_lib_dir "/${pyncpp_EXAMPLES_SUBDIR}" "/${pyncpp_LIBRARY_SUBDIR}")
 
 if(APPLE)
-    set(rpath "@executable_path/${relative_lib_dir}")
+    set(CMAKE_INSTALL_RPATH "@executable_path/${relative_lib_dir}")
 elseif(LINUX)
-    set(rpath "\$ORIGIN/${relative_lib_dir}")
+    set(CMAKE_INSTALL_RPATH "\$ORIGIN/${relative_lib_dir}")
 endif()
+
+################################################################################
+# Python packages
+################################################################################
+
+set(PYNCPP_EXAMPLES_SITE_DIR ${CMAKE_CURRENT_BINARY_DIR}/site)
+
+install(DIRECTORY "${PYNCPP_EXAMPLES_SITE_DIR}/"
+    DESTINATION "${pyncpp_EXAMPLES_SUBDIR}/site"
+    PATTERN "*.pyc" EXCLUDE
+    )
 
 ################################################################################
 # Subdirectories

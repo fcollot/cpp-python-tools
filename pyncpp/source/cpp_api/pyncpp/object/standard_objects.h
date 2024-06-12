@@ -66,7 +66,7 @@ PYNCPP_EXPORT Object tuple(const AbstractObject& object);
 /// containing the same elements.
 ///
 template <class TYPE>
-Object tuple(TYPE input)
+Object tuple(const TYPE& input)
 {
     PYNCPP_ACQUIRE_GIL;
 

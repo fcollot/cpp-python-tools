@@ -65,7 +65,7 @@ private:
 template <class TYPE, typename>
 FunctionCall& FunctionCall::kwarg(const char* name, const TYPE& value)
 {
-    return kwarg(name, Object::create(value));
+    return kwarg(name, Object(value));
 }
 
 // The following AbstractObject template functions are defined here to avoid
@@ -75,7 +75,7 @@ template <class... ARGS>
 FunctionCall AbstractObject::operator()(ARGS... args) const
 {
     std::list<Object> argsList;
-    (argsList.push_back(Object::create(args)), ...); // C++ fold expression
+    (argsList.push_back(Object(args)), ...); // C++ fold expression
     return FunctionCall(*this, tuple(argsList));
 }
 

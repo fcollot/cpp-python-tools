@@ -4,49 +4,55 @@
 #include <pyncpp.h>
 
 #include <QApplication>
+#include <QDebug>
 #include <QMainWindow>
+#include <QLayout>
+
+#include "test_button.h"
 
 int main(int argc, char** argv)
 {
     int exitStatus = EXIT_SUCCESS;
 
-    QApplication app(argc, argv);
-
+    pyncpp::Manager::setPythonHome(PYTHON_HOME);
     pyncpp::Manager::setCommandLineArguments(argc, argv);
-    pyncpp::Manager pyncppManager = pyncpp::Manager::instance();
+    pyncpp::Manager pyncppManager;
 
     if (pyncppManager.errorOccured())
     {
-        qCritical() << "Python initialization error: " << pyncppManager.errorMessage();
-        exitStatus = EXIT_FAILURE;
+       qCritical() << QString("Python initialization error: %1").arg(pyncppManager.errorMessage());
+       exitStatus = EXIT_FAILURE;
     }
     else
     {
         try
         {
-            pyncpp::Module consoleModule = pyncpp::Module::import(qUtf8Printable(QString("pyncpp_examples.qt%1").arg(PYNCPP_QT_VERSION)));
-            //pyncpp::Object pyApp = consoleModule.callMethod<pyncpp::Object, pyncpp::Object>("wrapInstance", appPointer, qApplicationClass);
-            //pyncpp::Module::import("__main__").attribute("app") = pyApp;
-            consoleModule.callMethod("runConsole");
-//            QWidget* console = d->console->toCPP<QWidget*>();
-//            console->setWindowTitle("woohooo!!");
-//            pythonManager.setConsoleShortcut(PYTHON_CONSOLE_SHORTCUT);
-//            QObject::connect(mainwindow, &QObject::destroyed, [&]() { pythonManager.deleteConsole(); });
-//            qInfo() << QString("The Python console can be accessed with %1")
-//                       .arg(QKeySequence(PYTHON_CONSOLE_SHORTCUT).toString(QKeySequence::NativeText));
-//            QObject::connect(&application, &QApplication::aboutToQuit, [&]() { pythonManager.finalize(); });
+            QApplication app(argc, argv);
+
+            pyncppManager.addModulePath("site");
+
+            QMainWindow mainWindow;
+            pyncpp::Module::import("__main__").attribute("main_window") = &mainWindow;
+            mainWindow.show();
+
+            TestButton* testButton = new TestButton();
+            mainWindow.setCentralWidget(testButton);
+
+            pyncpp::Object console = pyncpp::newQtConsole();
+            QWidget* consoleWidget = console.toCPP<QWidget*>();
+            consoleWidget->setAttribute(Qt::WA_QuitOnClose);
+            consoleWidget->show();
+            pyncpp::Module::import("__main__").attribute("console") = console;
+
+            //            QObject::connect(&application, &QApplication::aboutToQuit, [&]() { pythonManager.finalize(); });
+
+            exitStatus = app.exec();
         }
         catch (pyncpp::Exception& e)
         {
             qCritical() << "Python error: " << e.what();
+            exitStatus = EXIT_FAILURE;
         }
-
-       QMainWindow mainWindow;
-       QVariant qvariant = QVariant::fromValue(&mainWindow);
-       app.setProperty("main_window", qvariant);
-       mainWindow.show();
-
-       exitStatus = app.exec();
     }
 
     return exitStatus;

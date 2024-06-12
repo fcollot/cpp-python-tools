@@ -18,9 +18,8 @@ project(pyncpp VERSION "${PYNCPP_VERSION}")
 # Dependencies
 ################################################################################
 
-find_package(pyncpp REQUIRED
-    COMPONENTS python
-    )
+set(NO_PYNCPP_TARGETS TRUE)
+find_package(pyncpp REQUIRED)
 
 ################################################################################
 # Subdirectories

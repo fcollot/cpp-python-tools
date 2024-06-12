@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!--
+// Copyright (c) 2024 IHU Liryc, Université de Bordeaux, Inria.
+// License: BSD-3-Clause
+-->
+
+<typesystem package="@PACKAGE_NAME@.bindings">
+
+    <object-type name="TestButton"/>
+
+</typesystem>

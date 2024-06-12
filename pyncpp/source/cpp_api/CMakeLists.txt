@@ -78,8 +78,8 @@ elseif(APPLE)
 endif()
 
 target_compile_definitions(pyncpp_cpp_api_static PUBLIC
-    DEFAULT_PYTHON_HOME="${pyncpp_RELATIVE_PYTHON_DIR}"
     OS_${os_name}
+    DEFAULT_PYTHON_HOME="${pyncpp_RELATIVE_PYTHON_DIR}"
     )
 
 ################################################################################
@@ -91,7 +91,7 @@ target_include_directories(pyncpp_cpp_api_static
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/pyncpp"
     PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-    "$<INSTALL_INTERFACE:${pyncpp_INCLUDE_SUBDIR}/pyncpp/cpp_api>"
+    "$<INSTALL_INTERFACE:${pyncpp_INCLUDE_SUBDIR}/pyncpp>"
     )
 
 ################################################################################
@@ -130,7 +130,8 @@ install(EXPORT pyncpp_export_cpp_api
     )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
-    DESTINATION "${pyncpp_INCLUDE_SUBDIR}/pyncpp/cpp_api"
+    DESTINATION "${pyncpp_INCLUDE_SUBDIR}/pyncpp"
+    FILES_MATCHING
     PATTERN "*.h"
     PATTERN "CMakeLists.txt" EXCLUDE
     )

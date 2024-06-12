@@ -18,21 +18,9 @@
 namespace pyncpp
 {
 
-struct ObjectPrivate;
-
 class PYNCPP_EXPORT Object : public AbstractObject
 {
 public:
-    /// Wraps the same Python object as the one wrapped by 'other'.
-    ///
-    static Object create(const Object& other);
-
-    /// Converts a C++ object to Python using the associated overload of the
-    /// 'pyncppToPython' function.
-    ///
-    template <class TYPE>
-    static Object create(const TYPE& value);
-
     /// Wraps a Python object and increase its reference count (the caller keeps
     /// ownership of 'reference').
     ///
@@ -52,21 +40,8 @@ public:
     ///
     Object(const AbstractObject& other);
 
-    /// Creates a wrapped Python integer.
-    ///
-    Object(int value);
-
-    /// Creates a wrapped Python float.
-    ///
-    Object(double value);
-
-    /// Creates a wrapped Python string.
-    ///
-    Object(const char* value);
-
-    /// Creates a wrapped Python string.
-    ///
-    Object(const std::string& value);
+    template <class TYPE>
+    Object(const TYPE& value);
 
     virtual ~Object();
 
@@ -77,7 +52,7 @@ public:
     using AbstractObject::operator=;
 
 protected:
-    ObjectPrivate* const d;
+    PyObject* internalReference;
 
     PyObject* getReference() const override;
     void setReference(PyObject* reference) override;
@@ -87,7 +62,7 @@ private:
 };
 
 template <class TYPE>
-Object Object::create(const TYPE& value)
+Object::Object(const TYPE& value)
 {
     PyObject* reference;
     PYNCPP_ACQUIRE_GIL;
@@ -98,7 +73,7 @@ Object Object::create(const TYPE& value)
     }
 
     PYNCPP_RELEASE_GIL;
-    return reference;
+    internalSetReference(reference);
 }
 
 } // namespace pyncpp

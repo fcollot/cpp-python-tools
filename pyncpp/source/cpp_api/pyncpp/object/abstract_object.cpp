@@ -252,18 +252,6 @@ bool AbstractObject::isSubClass(const AbstractObject& type) const
     return cpythonCall(PyObject_IsSubclass, **this, *type);
 }
 
-void* AbstractObject::cppPointer() const
-{
-    void* result = nullptr;
-
-    if (PyCapsule_CheckExact(**this))
-    {
-        result = cpythonCall(PyCapsule_GetPointer, **this, nullptr);
-    }
-
-    return result;
-}
-
 void AbstractObject::unsupportedFunctionError(const char* functionName) const
 {
     std::string message = std::string(typeName())

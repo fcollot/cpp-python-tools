@@ -5,6 +5,7 @@
 
 #include "../error.h"
 
+#include <iostream>
 
 bool pyncppToPython(bool value, PyObject** output)
 {
@@ -90,38 +91,38 @@ bool pyncppToCPP(PyObject* object, std::string& output)
     return !PyErr_Occurred();
 }
 
-bool pyncppToPython(void* value, PyObject** output)
-{
-    if (value)
-    {
-        *output = PyCapsule_New(value, nullptr, nullptr);
-    }
-    else
-    {
-        *output = Py_None;
-        Py_INCREF(Py_None);
-    }
+//bool pyncppToPython(void* value, PyObject** output)
+//{
+//    if (value)
+//    {
+//        *output = PyCapsule_New(value, nullptr, nullptr);
+//    }
+//    else
+//    {
+//        *output = Py_None;
+//        Py_INCREF(Py_None);
+//    }
 
-    return !PyErr_Occurred();
-}
+//    return !PyErr_Occurred();
+//}
 
-bool pyncppToCPP(PyObject* object, void** output)
-{
-    if (object != Py_None)
-    {
-        if (PyCapsule_CheckExact(object))
-        {
-            *output = PyCapsule_GetPointer(object, nullptr);
-        }
-        else
-        {
-            *output = object;
-        }
-    }
-    else
-    {
-        *output = nullptr;
-    }
+//bool pyncppToCPP(PyObject* object, void** output)
+//{
+//    if (object != Py_None)
+//    {
+//        if (PyCapsule_CheckExact(object))
+//        {
+//            *output = PyCapsule_GetPointer(object, nullptr);
+//        }
+//        else
+//        {
+//            *output = object;
+//        }
+//    }
+//    else
+//    {
+//        *output = nullptr;
+//    }
 
-    return !PyErr_Occurred();
-}
+//    return !PyErr_Occurred();
+//}

@@ -7,6 +7,7 @@ cmake_policy(SET CMP0057 NEW) # IN_LIST operator
 
 include(CMakeFindDependencyMacro)
 
+set(previous_@PACKAGE_NAME@_DIR "${@PACKAGE_NAME@_DIR}")
 set(@PACKAGE_NAME@_DIR)
 
 get_directory_property(_previous_targets IMPORTED_TARGETS)
@@ -15,10 +16,10 @@ find_dependency(@PACKAGE_NAME@ @PACKAGE_VERSION@
     COMPONENTS ${@PACKAGE_NAME@_FIND_COMPONENTS}
     )
 
-set(@PACKAGE_NAME@_DIR)
+set(@PACKAGE_NAME@_DIR" ${previous_@PACKAGE_NAME@_DIR}")
 set(@PACKAGE_NAME@_FOUND TRUE)
 
-set(@PACKAGE_NAME@_RPATHS)
+set(@PACKAGE_NAME@_PATHS)
 
 get_directory_property(_imported_targets IMPORTED_TARGETS)
 
@@ -48,14 +49,15 @@ foreach(_target ${_imported_targets})
             file(GLOB_RECURSE python_library "@PACKAGE_BINARY_DIR@/${library_name}")
 
             if(python_library)
-                cmake_path(GET python_library PARENT_PATH rpath)
+                cmake_path(GET python_library PARENT_PATH library_dir)
 
-                if(rpath MATCHES "^(.*)/.*\.framework(/.*)?$")
-                    set(rpath "${CMAKE_MATCH_1}")
+                if(library_dir MATCHES "^(.*)/.*\.framework(/.*)?$")
+                    set(library_dir "${CMAKE_MATCH_1}")
                 endif()
 
-                if(NOT rpath MATCHES "^.*/plugins(/.*)?$")
-                    list(APPEND @PACKAGE_NAME@_RPATHS ${rpath})
+                if(NOT library_dir MATCHES "^.*/plugins(/.*)?$")
+                    file(RELATIVE_PATH library_dir "@pyncpp_ROOT@" "${library_dir}")
+                    list(APPEND @PACKAGE_NAME@_PATHS ${library_dir})
                 endif()
 
                 set_target_properties(${_target} PROPERTIES
@@ -73,7 +75,7 @@ foreach(_target ${_imported_targets})
     endif()
 endforeach()
 
-list(REMOVE_DUPLICATES @PACKAGE_NAME@_RPATHS)
+list(REMOVE_DUPLICATES @PACKAGE_NAME@_library_dirS)
 
 foreach(_component ${@PACKAGE_NAME@_FIND_COMPONENTS})
     set(@PACKAGE_NAME@_${_component}_FOUND TRUE)
