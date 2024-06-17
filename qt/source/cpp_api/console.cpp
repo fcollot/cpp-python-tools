@@ -8,7 +8,7 @@
 namespace pyncpp
 {
 
-Object pyncpp::newQtConsole(QWidget* parent)
+Object newQtConsole(QWidget* parent)
 {
     Object consoleClass = Module::import(qUtf8Printable(QString("pyncpp.qt%1.console").arg(PYNCPP_QT_VERSION))).attribute("Console");
     Object console = consoleClass();

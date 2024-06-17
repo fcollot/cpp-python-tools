@@ -6,6 +6,7 @@
 
 <typesystem package="@PACKAGE_NAME@.bindings">
 
+    <object-type name="QPushButton"/>
     <object-type name="TestButton"/>
 
 </typesystem>

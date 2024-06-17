@@ -1,17 +1,4 @@
-import argparse
-import importlib, inspect, os, subprocess, sys
-from . import shiboken
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument('shiboken')
-
-    args = parser.parse_args()
-
-
-def main():
-
+import importlib, inspect
 
 
 _class2module_map = None
